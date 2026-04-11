@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTransactions, useGroupTransactions } from "@/hooks/useTransactions";
 import { useGroups } from "@/hooks/useGroups";
@@ -13,6 +13,7 @@ import {
   Search,
   Filter,
   Users,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +38,8 @@ import { EditTransactionModal } from "@/components/modals/EditTransactionModal";
 type TabType = "LIST" | "GROUP" | "TRASH";
 type FilterType = "ALL" | "INCOME" | "EXPENSE";
 
-export default function TransactionsPage() {
+// 2. Tách toàn bộ logic cũ vào component này
+function TransactionsContent() {
   const searchParams = useSearchParams();
 
   const [page, setPage] = useState(0);
@@ -49,7 +51,6 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState<FilterType>("ALL");
   const size = 10;
 
-  // 💡 LẮNG NGHE URL ĐỂ TỰ ĐỘNG CHUYỂN TAB
   useEffect(() => {
     const tabQuery = searchParams.get("tab");
     if (tabQuery === "GROUP" || tabQuery === "LIST" || tabQuery === "TRASH") {
@@ -84,12 +85,10 @@ export default function TransactionsPage() {
   );
   const groupTransactions = groupData?.data?.content || [];
 
-  // STATE QUẢN LÝ MODAL
   const [transToEdit, setTransToEdit] = useState<any>(null);
   const [transToDelete, setTransToDelete] = useState<any>(null);
   const [transToForceDelete, setTransToForceDelete] = useState<any>(null);
 
-  // HÀM XỬ LÝ SỬA/XÓA
   const handleUpdate = (payload: any) => {
     updateTransaction.mutate(payload, {
       onSuccess: () => setTransToEdit(null),
@@ -174,7 +173,6 @@ export default function TransactionsPage() {
 
       {/* TABS & CONTROLS BARS */}
       <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 p-2 bg-muted/30 rounded-[2.5rem] border border-border/40 shadow-sm backdrop-blur-lg sticky top-4 z-40">
-        {/* TAB NAVIGATION */}
         <div className="flex bg-muted/50 p-1.5 rounded-[2rem] border border-border/20">
           <button
             onClick={() => {
@@ -184,8 +182,8 @@ export default function TransactionsPage() {
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
               activeTab === "LIST"
-                ? "bg-background shadow-xl text-primary scale-100 border border-border/50"
-                : "text-muted-foreground hover:text-foreground scale-95 hover:scale-100",
+                ? "bg-background shadow-xl text-primary border border-border/50"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <List size={16} /> Cá nhân
@@ -198,8 +196,8 @@ export default function TransactionsPage() {
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
               activeTab === "GROUP"
-                ? "bg-background shadow-xl text-primary scale-100 border border-border/50"
-                : "text-muted-foreground hover:text-foreground scale-95 hover:scale-100",
+                ? "bg-background shadow-xl text-primary border border-border/50"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Users size={16} /> Nhóm
@@ -212,21 +210,20 @@ export default function TransactionsPage() {
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
               activeTab === "TRASH"
-                ? "bg-destructive/10 text-destructive shadow-lg scale-100"
-                : "text-muted-foreground hover:text-destructive scale-95 hover:scale-100",
+                ? "bg-destructive/10 text-destructive shadow-lg"
+                : "text-muted-foreground hover:text-destructive",
             )}
           >
             <Trash2 size={16} /> Đã xóa
           </button>
         </div>
 
-        {/* CONTROLS (Search/Filter) */}
         <div className="flex flex-row items-center gap-3 px-2">
           {activeTab === "LIST" && (
             <>
               <div className="relative flex-1 sm:w-60 group">
                 <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary"
                   size={15}
                 />
                 <Input
@@ -234,33 +231,23 @@ export default function TransactionsPage() {
                   placeholder="Tìm giao dịch..."
                   value={searchInput}
                   onChange={handleSearchChange}
-                  className="w-full h-11 pl-10 rounded-2xl bg-background border-border/50 text-xs font-bold focus:ring-primary/20"
+                  className="w-full h-11 pl-10 rounded-2xl bg-background border-border/50 text-xs font-bold"
                 />
               </div>
-              <div className="relative">
-                <Select
-                  value={filterType}
-                  onValueChange={(val) => handleFilterChange(val as FilterType)}
-                >
-                  <SelectTrigger className="w-36 h-11 rounded-2xl bg-background border-border/50 text-[10px] font-black uppercase tracking-widest">
-                    <div className="flex items-center gap-2">
-                      <Filter size={14} className="text-muted-foreground" />
-                      <SelectValue placeholder="Bộ lọc" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    <SelectItem value="ALL" className="rounded-xl">
-                      TẤT CẢ
-                    </SelectItem>
-                    <SelectItem value="INCOME" className="rounded-xl">
-                      THU NHẬP
-                    </SelectItem>
-                    <SelectItem value="EXPENSE" className="rounded-xl">
-                      CHI TIÊU
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select
+                value={filterType}
+                onValueChange={(val) => handleFilterChange(val as FilterType)}
+              >
+                <SelectTrigger className="w-36 h-11 rounded-2xl bg-background border-border/50 text-[10px] font-black uppercase tracking-widest">
+                  <Filter size={14} className="mr-2" />
+                  <SelectValue placeholder="Bộ lọc" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  <SelectItem value="ALL">TẤT CẢ</SelectItem>
+                  <SelectItem value="INCOME">THU NHẬP</SelectItem>
+                  <SelectItem value="EXPENSE">CHI TIÊU</SelectItem>
+                </SelectContent>
+              </Select>
             </>
           )}
 
@@ -273,32 +260,23 @@ export default function TransactionsPage() {
               }}
             >
               <SelectTrigger className="w-full sm:w-64 h-11 rounded-2xl bg-background border-border/50 text-[10px] font-black uppercase tracking-widest">
-                <div className="flex items-center gap-2">
-                  <Users size={14} className="text-muted-foreground" />
-                  <SelectValue placeholder="Chọn nhóm" />
-                </div>
+                <Users size={14} className="mr-2" />
+                <SelectValue placeholder="Chọn nhóm" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
-                {groups.length === 0 ? (
-                  <SelectItem value="empty" disabled>
-                    CHƯA CÓ NHÓM
+                {groups.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.name}
                   </SelectItem>
-                ) : (
-                  groups.map((g) => (
-                    <SelectItem key={g.id} value={g.id} className="rounded-xl">
-                      {g.name}
-                    </SelectItem>
-                  ))
-                )}
+                ))}
               </SelectContent>
             </Select>
           )}
         </div>
       </div>
 
-      {/* CONTENT AREA */}
       <main className="min-h-[400px] pb-20">
-        <div className="animate-in fade-in-50 slide-in-from-bottom-3 duration-700">
+        <div className="animate-in fade-in slide-in-from-bottom-3 duration-700">
           {activeTab === "LIST" && (
             <PersonalTab
               keyword={keyword}
@@ -344,24 +322,40 @@ export default function TransactionsPage() {
         onUpdate={handleUpdate}
         isUpdating={updateTransaction.isPending}
       />
-
       <ConfirmModal
         isOpen={!!transToDelete}
         onClose={() => setTransToDelete(null)}
         onConfirm={confirmDelete}
         title="Chuyển vào thùng rác?"
-        description={`Khoản ${transToDelete?.categoryType === "INCOME" ? "thu" : "chi"} "${transToDelete?.note || transToDelete?.categoryName}" (${transToDelete?.amount?.toLocaleString()}đ) sẽ được dọn dẹp khỏi sổ chính.`}
+        description={`Khoản giao dịch sẽ được dọn dẹp khỏi sổ chính.`}
         isLoading={deleteTransaction.isPending}
       />
-
       <ConfirmModal
         isOpen={!!transToForceDelete}
         onClose={() => setTransToForceDelete(null)}
         onConfirm={confirmForceDelete}
         title="Xóa vĩnh viễn!"
-        description={`Hành động này sẽ xóa sạch dấu vết của giao dịch "${transToForceDelete?.note || transToForceDelete?.categoryName}" và không thể khôi phục.`}
+        description={`Hành động này không thể khôi phục.`}
         isLoading={forceDeleteTransaction.isPending}
       />
     </div>
+  );
+}
+
+// 3. Export mặc định bọc trong Suspense để fix lỗi Build
+export default function TransactionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
+            Đang tải dữ liệu giao dịch...
+          </p>
+        </div>
+      }
+    >
+      <TransactionsContent />
+    </Suspense>
   );
 }

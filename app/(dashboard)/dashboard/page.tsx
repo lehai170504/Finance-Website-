@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { useProfile } from "@/hooks/useProfile";
@@ -22,20 +22,19 @@ import {
 import { cn } from "@/lib/utils";
 
 const CHART_COLORS = [
-  "#0088ff", // Azure
-  "#10b981", // Emerald
-  "#f59e0b", // Amber
-  "#6366f1", // Blue
-  "#8b5cf6", // Violet
-  "#ec4899", // Pink
-  "#f43f5e", // Rose
+  "#0088ff",
+  "#10b981",
+  "#f59e0b",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#f43f5e",
 ];
 
 export default function DashboardPage() {
   const router = useRouter();
   const { data: user, isLoading: isProfileLoading } = useProfile();
   const { totalBalance, isLoading: isWalletsLoading } = useWallets();
-
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
 
   const [startDate] = useState(
@@ -48,14 +47,32 @@ export default function DashboardPage() {
       .toISOString()
       .split("T")[0],
   );
+
   const { stats, isLoadingStats } = useReports(startDate, endDate);
 
   useEffect(() => {
     const token = Cookies.get("access_token");
-    if (!token) {
-      router.push("/login");
-    }
+    if (!token) router.push("/login");
   }, [router]);
+
+  const { expenseStats, totalExpense, totalIncome } = useMemo(() => {
+    const expenses =
+      stats?.filter((s: any) => s.categoryType === "EXPENSE") || [];
+    const incomes =
+      stats?.filter((s: any) => s.categoryType === "INCOME") || [];
+
+    return {
+      expenseStats: expenses,
+      totalExpense: expenses.reduce(
+        (sum: number, item: any) => sum + item.totalAmount,
+        0,
+      ),
+      totalIncome: incomes.reduce(
+        (sum: number, item: any) => sum + item.totalAmount,
+        0,
+      ),
+    };
+  }, [stats]);
 
   if (isProfileLoading || isWalletsLoading) {
     return (
@@ -70,27 +87,13 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const expenseStats =
-    stats?.filter((s: any) => s.categoryType === "EXPENSE") || [];
-  const incomeStats =
-    stats?.filter((s: any) => s.categoryType === "INCOME") || [];
-
-  const totalExpense = expenseStats.reduce(
-    (sum: number, item: any) => sum + item.totalAmount,
-    0,
-  );
-  const totalIncome = incomeStats.reduce(
-    (sum: number, item: any) => sum + item.totalAmount,
-    0,
-  );
-
-  let cumulativePercent = 0;
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
+  let cumulativePercent = 0; // Luôn reset khi re-render
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 mt-6 md:mt-10 flex flex-col space-y-14 font-sans mb-20">
-      {/* HEADER SECTION */}
+      {/* HEADER SECTION - GIỮ NGUYÊN VÌ ĐÃ ĐẸP */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-primary">
@@ -129,100 +132,96 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* STATS CARDS */}
+      {/* STATS CARDS - CẬP NHẬT HOVER EFFECT NỔI BẬT HƠN */}
       <div className="grid gap-8 grid-cols-1 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-        {/* CARD TỔNG SỐ DƯ */}
-        <div className="p-8 border-2 border-border/40 rounded-[2.5rem] bg-card/50 backdrop-blur-md flex flex-col justify-between shadow-sm relative overflow-hidden group hover:shadow-2xl hover:border-primary/30 transition-all duration-500 hover:-translate-y-2">
-          <div className="absolute -top-24 -right-24 w-56 h-56 bg-primary/10 rounded-full blur-[80px] group-hover:bg-primary/20 transition-all duration-700" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-primary/10 rounded-2xl text-primary border border-primary/10 shadow-inner">
-                <Wallet size={20} strokeWidth={2.5} />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/80">
-                Tổng số dư ví
-              </span>
-            </div>
-            <p className="text-4xl md:text-5xl font-black tracking-tighter font-money">
-              {totalBalance.toLocaleString()}
-              <span className="text-lg ml-1 opacity-40">đ</span>
-            </p>
-          </div>
-          <Link
-            href="/wallets"
-            className="relative z-10 mt-10 text-[10px] font-black uppercase text-primary tracking-widest hover:underline flex items-center gap-2 group/link"
+        {[
+          {
+            title: "Tổng số dư ví",
+            amount: totalBalance,
+            icon: Wallet,
+            color: "primary",
+            link: "/wallets",
+            text: "Quản lý dòng tiền",
+          },
+          {
+            title: "Thu nhập tháng này",
+            amount: totalIncome,
+            icon: ArrowUpRight,
+            color: "emerald-500",
+            link: "/reports",
+            text: "Lịch sử thu nhập",
+          },
+          {
+            title: "Chi tiêu tháng này",
+            amount: totalExpense,
+            icon: ArrowDownRight,
+            color: "destructive",
+            link: "/reports",
+            text: "Phân tích chi tiêu",
+          },
+        ].map((card, idx) => (
+          <div
+            key={idx}
+            className={cn(
+              "p-8 border-2 border-border/40 rounded-[2.5rem] bg-card/50 backdrop-blur-md flex flex-col justify-between shadow-sm relative overflow-hidden group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2",
+              card.color === "primary"
+                ? "hover:border-primary/30"
+                : card.color === "emerald-500"
+                  ? "hover:border-emerald-500/30"
+                  : "hover:border-destructive/30",
+            )}
           >
-            Quản lý dòng tiền{" "}
-            <ArrowRight
-              size={14}
-              strokeWidth={3}
-              className="group-hover/link:translate-x-1.5 transition-transform"
+            <div
+              className={cn(
+                "absolute -top-24 -right-24 w-56 h-56 rounded-full blur-[80px] transition-all duration-700 opacity-20",
+                `bg-${card.color}`,
+              )}
             />
-          </Link>
-        </div>
-
-        {/* CARD THU NHẬP */}
-        <div className="p-8 border-2 border-border/40 rounded-[2.5rem] bg-card/50 backdrop-blur-md flex flex-col justify-between shadow-sm relative overflow-hidden group hover:shadow-2xl hover:border-emerald-500/30 transition-all duration-500 hover:-translate-y-2">
-          <div className="absolute -top-24 -right-24 w-56 h-56 bg-emerald-500/10 rounded-full blur-[80px] group-hover:bg-emerald-500/20 transition-all duration-700" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500 border border-emerald-500/10 shadow-inner">
-                <ArrowUpRight size={20} strokeWidth={2.5} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div
+                  className={cn(
+                    "p-3 rounded-2xl border border-border/10 shadow-inner",
+                    `bg-${card.color}/10 text-${card.color}`,
+                  )}
+                >
+                  <card.icon size={20} strokeWidth={2.5} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/80">
+                  {card.title}
+                </span>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/80">
-                Thu nhập tháng này
-              </span>
+              <p
+                className={cn(
+                  "text-4xl md:text-5xl font-black tracking-tighter font-money",
+                  card.color !== "primary" && `text-${card.color}`,
+                )}
+              >
+                {card.amount.toLocaleString()}
+                <span className="text-lg ml-1 opacity-40 italic">đ</span>
+              </p>
             </div>
-            <p className="text-4xl md:text-5xl font-black tracking-tighter text-emerald-600 font-money">
-              {totalIncome.toLocaleString()}
-              <span className="text-lg ml-1 opacity-40 italic">đ</span>
-            </p>
+            <Link
+              href={card.link}
+              className={cn(
+                "relative z-10 mt-10 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-2 group/link",
+                card.color === "primary"
+                  ? "text-primary"
+                  : "text-muted-foreground/60 hover:text-foreground",
+              )}
+            >
+              {card.text}{" "}
+              <ArrowRight
+                size={14}
+                strokeWidth={3}
+                className="group-hover/link:translate-x-1.5 transition-transform"
+              />
+            </Link>
           </div>
-          <Link
-            href="/reports"
-            className="relative z-10 mt-10 text-[10px] font-black text-muted-foreground/60 hover:text-foreground uppercase tracking-widest flex items-center gap-2 transition-all group/link"
-          >
-            Lịch sử thu nhập{" "}
-            <ArrowRight
-              size={14}
-              strokeWidth={3}
-              className="group-hover/link:translate-x-1.5 transition-transform"
-            />
-          </Link>
-        </div>
-
-        {/* CARD CHI TIÊU */}
-        <div className="p-8 border-2 border-border/40 rounded-[2.5rem] bg-card/50 backdrop-blur-md flex flex-col justify-between shadow-sm relative overflow-hidden group hover:shadow-2xl hover:border-destructive/30 transition-all duration-500 hover:-translate-y-2">
-          <div className="absolute -top-24 -right-24 w-56 h-56 bg-destructive/10 rounded-full blur-[80px] group-hover:bg-destructive/20 transition-all duration-700" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-destructive/10 rounded-2xl text-destructive border border-destructive/10 shadow-inner">
-                <ArrowDownRight size={20} strokeWidth={2.5} />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/80">
-                Chi tiêu tháng này
-              </span>
-            </div>
-            <p className="text-4xl md:text-5xl font-black tracking-tighter text-destructive font-money">
-              {totalExpense.toLocaleString()}
-              <span className="text-lg ml-1 opacity-40 italic">đ</span>
-            </p>
-          </div>
-          <Link
-            href="/reports"
-            className="relative z-10 mt-10 text-[10px] font-black text-muted-foreground/60 hover:text-foreground uppercase tracking-widest flex items-center gap-2 transition-all group/link"
-          >
-            Phân tích chi tiêu{" "}
-            <ArrowRight
-              size={14}
-              strokeWidth={3}
-              className="group-hover/link:translate-x-1.5 transition-transform"
-            />
-          </Link>
-        </div>
+        ))}
       </div>
 
-      {/* CHART SECTION */}
+      {/* CHART SECTION - FIX LOGIC RENDER BIỂU ĐỒ */}
       <div className="p-8 md:p-12 border-2 border-border/40 rounded-[3rem] bg-card shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-border/40 pb-6 relative z-10">
           <div className="flex items-center gap-4">
@@ -271,7 +270,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row items-center gap-16 justify-center relative z-10 px-4">
-            {/* SVG DONUT CHART */}
+            {/* SVG DONUT CHART - TỐI ƯU STROKE & ANIMATION */}
             <div className="relative w-64 h-64 md:w-72 md:h-72 shrink-0 drop-shadow-2xl">
               <svg
                 viewBox="0 0 100 100"
@@ -284,7 +283,7 @@ export default function DashboardPage() {
                     (cumulativePercent * circumference) /
                     100
                   );
-                  cumulativePercent += percent;
+                  cumulativePercent += percent; // Cập nhật cho vòng lặp kế tiếp
                   const color = CHART_COLORS[index % CHART_COLORS.length];
 
                   return (
@@ -298,13 +297,13 @@ export default function DashboardPage() {
                       strokeWidth="14"
                       strokeDasharray={dashArray}
                       strokeDashoffset={dashOffset}
-                      strokeLinecap="round"
-                      className="transition-all duration-1000 ease-in-out hover:stroke-width-[16] cursor-pointer"
+                      strokeLinecap={percent > 2 ? "round" : "butt"} // Bo góc nếu phần trăm đủ lớn
+                      className="transition-all duration-700 ease-out hover:stroke-width-[18] cursor-pointer"
                     />
                   );
                 })}
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-background/20 rounded-full backdrop-blur-[1px]">
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-background/5 rounded-full backdrop-blur-[2px]">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                   Tổng chi
                 </span>
@@ -316,7 +315,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* LIST CHÚ THÍCH */}
+            {/* LIST CHÚ THÍCH - GIỮ NGUYÊN */}
             <div className="flex-1 w-full max-w-md space-y-4">
               {expenseStats.map((item: any, index: number) => {
                 const color = CHART_COLORS[index % CHART_COLORS.length];
@@ -354,7 +353,6 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* FLOATING ACTION BUTTON */}
       <Button
         onClick={() => setIsQuickCreateOpen(true)}
         className="fixed bottom-10 right-10 w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/50 hover:scale-110 hover:-rotate-6 active:scale-95 transition-all duration-500 z-50 group overflow-hidden"
@@ -366,7 +364,6 @@ export default function DashboardPage() {
         </span>
       </Button>
 
-      {/* MODAL */}
       <QuickTransactionModal
         isOpen={isQuickCreateOpen}
         onClose={() => setIsQuickCreateOpen(false)}

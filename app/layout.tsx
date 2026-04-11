@@ -23,8 +23,14 @@ export const metadata: Metadata = {
   title: "Homie Finance | Quản lý tài chính tinh gọn",
   description:
     "Hệ thống quản lý chi tiêu cá nhân tối giản, tốc độ cao và bảo mật tuyệt đối.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "logo-icon.png", type: "image/png" },
+    ],
+    apple: [{ url: "/logo-icon.png" }],
+  },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -68,34 +68,34 @@ export function TransactionCard({
     <>
       <div
         className={cn(
-          "group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 border-2 border-border/40 rounded-3xl bg-card hover:shadow-xl hover:border-primary/30 transition-all duration-300 overflow-hidden",
+          "group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 border-2 border-border/40 rounded-[2rem] bg-card hover:shadow-2xl hover:border-primary/30 transition-all duration-500 overflow-hidden font-sans",
           isTrash && "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
         )}
       >
-        {/* VẠCH MÀU */}
+        {/* VẠCH MÀU CHỈ ĐỊNH LOẠI GIAO DỊCH */}
         <div
           className={cn(
-            "absolute left-0 top-0 bottom-0 w-1.5 transition-colors",
-            isExpense ? "bg-red-500/80" : "bg-emerald-500/80",
+            "absolute left-0 top-0 bottom-0 w-1.5 transition-colors duration-500",
+            isExpense ? "bg-red-500" : "bg-emerald-500",
           )}
         />
 
-        <div className="flex items-center gap-4 w-full sm:w-auto pl-2">
-          {/* ICON DANH MỤC */}
+        <div className="flex items-center gap-4 w-full sm:w-auto pl-2 relative z-10">
+          {/* ICON DANH MỤC - ROUNDED-XL ĐỒNG BỘ */}
           <div
             className={cn(
-              "w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm border border-border/50 transition-transform group-hover:scale-105",
+              "w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-black text-lg shadow-inner border border-border/50 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
               isExpense
-                ? "bg-red-500/5 text-red-500"
-                : "bg-emerald-500/5 text-emerald-500",
+                ? "bg-red-500/10 text-red-500"
+                : "bg-emerald-500/10 text-emerald-500",
             )}
           >
             {trans.categoryName?.charAt(0).toUpperCase()}
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1">
+          <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="font-bold tracking-tight p-2 text-foreground text-sm sm:text-base leading-none truncate max-w-37.5 sm:max-w-xs">
+              <h4 className="font-black tracking-tight text-foreground text-sm sm:text-base leading-none truncate max-w-[150px] sm:max-w-xs uppercase p-2">
                 {trans.note || trans.categoryName}
               </h4>
 
@@ -103,36 +103,32 @@ export function TransactionCard({
                 <Button
                   onClick={() => setIsImageViewerOpen(true)}
                   variant="outline"
-                  className="h-5 px-2 rounded-md border-primary/20 bg-primary/5 hover:bg-primary hover:text-white text-primary text-[9px] font-black uppercase tracking-tighter gap-1 transition-all"
+                  className="h-6 px-2 rounded-lg border-primary/20 bg-primary/5 hover:bg-primary hover:text-white text-primary text-[9px] font-black uppercase tracking-widest gap-1 transition-all active:scale-90"
                 >
-                  <Paperclip size={10} /> Bill
+                  <Paperclip size={10} strokeWidth={3} /> Bill
                 </Button>
               )}
             </div>
 
-            {/* BADGES THÔNG TIN - Typography nhỏ và tinh tế */}
+            {/* BADGES THÔNG TIN - THIẾT KẾ LẠI GỌN SANG */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 px-2 py-1 rounded-lg">
+              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest bg-muted/30 px-2 py-1 rounded-md border border-border/20">
                 <CalendarDays size={10} /> {trans.date}
               </span>
 
-              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 px-2 py-1 rounded-lg">
+              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest bg-muted/30 px-2 py-1 rounded-md border border-border/20">
                 <Wallet size={10} /> {trans.walletName}
               </span>
 
               {!isPersonal && (
-                <span className="flex items-center gap-1 text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded-lg border border-primary/10">
-                  <Users size={10} /> {trans.groupName}
+                <span className="flex items-center gap-1 text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded-md border border-primary/20">
+                  <Users size={10} strokeWidth={3} /> {trans.groupName}
                 </span>
               )}
 
-              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 px-2 py-1 rounded-lg">
-                <Tag size={10} /> {trans.categoryName}
-              </span>
-
               {!isPersonal && trans.userName && (
-                <span className="text-[9px] font-bold text-muted-foreground/60 uppercase">
-                  • {isOwner ? "BẠN" : trans.userName}
+                <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-tighter">
+                  • {isOwner ? "YOU" : trans.userName}
                 </span>
               )}
             </div>
@@ -140,23 +136,25 @@ export function TransactionCard({
         </div>
 
         {/* NỬA PHẢI: SỐ TIỀN + ACTIONS */}
-        <div className="flex flex-row sm:flex-row-reverse w-full sm:w-auto items-center justify-between sm:justify-start gap-5 pl-[64px] sm:pl-0 pr-1">
+        <div className="flex flex-row sm:flex-row-reverse w-full sm:w-auto items-center justify-between sm:justify-start gap-6 pl-14 sm:pl-0 pr-1 relative z-10">
           <div
             className={cn(
-              "text-xl sm:text-2xl font-black tracking-tighter shrink-0 font-money",
-              isExpense ? "text-red-500" : "text-emerald-500",
+              "text-xl sm:text-2xl font-black tracking-tighter shrink-0 font-money leading-none",
+              isExpense ? "text-red-500" : "text-emerald-600",
             )}
           >
             {isExpense ? "-" : "+"}
             {trans.amount?.toLocaleString()}
-            <span className="text-xs ml-0.5 opacity-70">đ</span>
+            <span className="text-[10px] ml-1 opacity-40 font-sans tracking-normal uppercase">
+              vnđ
+            </span>
           </div>
 
-          <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-500">
             {isProfileLoading ? (
               <Loader2
                 size={14}
-                className="animate-spin text-muted-foreground mx-2"
+                className="animate-spin text-muted-foreground/30 mx-2"
               />
             ) : isTrash ? (
               isOwner && (
@@ -165,17 +163,17 @@ export function TransactionCard({
                     variant="ghost"
                     size="icon"
                     onClick={() => onRestore && onRestore(trans)}
-                    className="w-8 h-8 rounded-xl bg-muted/50 hover:bg-emerald-500/10 hover:text-emerald-500"
+                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all active:scale-90"
                   >
-                    <RotateCcw size={14} />
+                    <RotateCcw size={16} strokeWidth={2.5} />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => onForceDelete && onForceDelete(trans)}
-                    className="w-8 h-8 rounded-xl bg-muted/50 hover:bg-destructive/10 hover:text-destructive"
+                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-destructive/10 hover:text-destructive transition-all active:scale-90"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} strokeWidth={2.5} />
                   </Button>
                 </>
               )
@@ -195,13 +193,13 @@ export function TransactionCard({
                     size="icon"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary"
+                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all active:scale-90"
                     title="Đính kèm Bill"
                   >
                     {isUploading ? (
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin" />
                     ) : (
-                      <ImagePlus size={14} />
+                      <ImagePlus size={16} strokeWidth={2.5} />
                     )}
                   </Button>
 
@@ -209,9 +207,9 @@ export function TransactionCard({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary"
+                      className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all active:scale-90"
                     >
-                      <History size={14} />
+                      <History size={16} strokeWidth={2.5} />
                     </Button>
                   </Link>
 
@@ -219,18 +217,18 @@ export function TransactionCard({
                     variant="ghost"
                     size="icon"
                     onClick={() => onEdit && onEdit(trans)}
-                    className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary"
+                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all active:scale-90"
                   >
-                    <Settings2 size={14} />
+                    <Settings2 size={16} strokeWidth={2.5} />
                   </Button>
 
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => onDelete && onDelete(trans)}
-                    className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-destructive/10 hover:text-destructive"
+                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-destructive/10 hover:text-destructive transition-all active:scale-90"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} strokeWidth={2.5} />
                   </Button>
                 </>
               )
@@ -240,13 +238,13 @@ export function TransactionCard({
       </div>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-3xl bg-transparent border-none p-0 flex justify-center items-center outline-none">
+        <DialogContent className="max-w-4xl bg-black/90 border-none p-0 overflow-hidden flex justify-center items-center outline-none rounded-[2rem]">
           <DialogTitle className="sr-only">Hình ảnh hóa đơn</DialogTitle>
           {trans.receiptUrl && (
             <img
               src={trans.receiptUrl}
               alt="Hóa đơn"
-              className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-2xl border-4 border-white/10"
+              className="max-h-[90vh] w-auto object-contain animate-in zoom-in-95 duration-300"
             />
           )}
         </DialogContent>

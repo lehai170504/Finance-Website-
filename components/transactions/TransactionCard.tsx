@@ -81,7 +81,7 @@ export function TransactionCard({
         />
 
         <div className="flex items-center gap-4 w-full sm:w-auto pl-2 relative z-10">
-          {/* ICON DANH MỤC - ROUNDED-XL ĐỒNG BỘ */}
+          {/* ICON DANH MỤC */}
           <div
             className={cn(
               "w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-black text-lg shadow-inner border border-border/50 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
@@ -93,9 +93,9 @@ export function TransactionCard({
             {trans.categoryName?.charAt(0).toUpperCase()}
           </div>
 
-          <div className="flex flex-col gap-2 flex-1 min-w-0">
+          <div className="flex flex-col gap-1 flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="font-black tracking-tight text-foreground text-sm sm:text-base leading-none truncate max-w-[150px] sm:max-w-xs uppercase p-2">
+              <h4 className="font-black tracking-tight text-foreground text-sm sm:text-base leading-none truncate max-w-[140px] sm:max-w-xs uppercase">
                 {trans.note || trans.categoryName}
               </h4>
 
@@ -103,15 +103,15 @@ export function TransactionCard({
                 <Button
                   onClick={() => setIsImageViewerOpen(true)}
                   variant="outline"
-                  className="h-6 px-2 rounded-lg border-primary/20 bg-primary/5 hover:bg-primary hover:text-white text-primary text-[9px] font-black uppercase tracking-widest gap-1 transition-all active:scale-90"
+                  className="h-6 px-2 rounded-lg border-primary/20 bg-primary/5 hover:bg-primary hover:text-white text-primary text-[9px] font-black uppercase tracking-widest gap-1 transition-all active:scale-90 shrink-0"
                 >
                   <Paperclip size={10} strokeWidth={3} /> Bill
                 </Button>
               )}
             </div>
 
-            {/* BADGES THÔNG TIN - THIẾT KẾ LẠI GỌN SANG */}
-            <div className="flex flex-wrap items-center gap-1.5">
+            {/* BADGES THÔNG TIN */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-1">
               <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest bg-muted/30 px-2 py-1 rounded-md border border-border/20">
                 <CalendarDays size={10} /> {trans.date}
               </span>
@@ -128,7 +128,7 @@ export function TransactionCard({
 
               {!isPersonal && trans.userName && (
                 <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-tighter">
-                  • {isOwner ? "YOU" : trans.userName}
+                  • {isOwner ? "BẠN" : trans.userName}
                 </span>
               )}
             </div>
@@ -136,7 +136,8 @@ export function TransactionCard({
         </div>
 
         {/* NỬA PHẢI: SỐ TIỀN + ACTIONS */}
-        <div className="flex flex-row sm:flex-row-reverse w-full sm:w-auto items-center justify-between sm:justify-start gap-6 pl-14 sm:pl-0 pr-1 relative z-10">
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-6 ml-auto pr-1 relative z-10">
+          {/* SỐ TIỀN: Cho nó luôn nằm trên cùng hoặc bên trái */}
           <div
             className={cn(
               "text-xl sm:text-2xl font-black tracking-tighter shrink-0 font-money leading-none",
@@ -150,87 +151,81 @@ export function TransactionCard({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-500">
+          {/* DÀN NÚT BẤM: Tinh chỉnh lại để không bao giờ bị lệch */}
+          <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-500 bg-muted/5 sm:bg-transparent p-1 sm:p-0 rounded-xl">
             {isProfileLoading ? (
               <Loader2
                 size={14}
                 className="animate-spin text-muted-foreground/30 mx-2"
               />
-            ) : isTrash ? (
-              isOwner && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onRestore && onRestore(trans)}
-                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all active:scale-90"
-                  >
-                    <RotateCcw size={16} strokeWidth={2.5} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onForceDelete && onForceDelete(trans)}
-                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-destructive/10 hover:text-destructive transition-all active:scale-90"
-                  >
-                    <Trash2 size={16} strokeWidth={2.5} />
-                  </Button>
-                </>
-              )
             ) : (
               isOwner && (
-                <>
-                  <input
-                    type="file"
-                    className="hidden"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all active:scale-90"
-                    title="Đính kèm Bill"
-                  >
-                    {isUploading ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <ImagePlus size={16} strokeWidth={2.5} />
-                    )}
-                  </Button>
-
-                  <Link href={`/transactions/${trans.id}/logs`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all active:scale-90"
-                    >
-                      <History size={16} strokeWidth={2.5} />
-                    </Button>
-                  </Link>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit && onEdit(trans)}
-                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all active:scale-90"
-                  >
-                    <Settings2 size={16} strokeWidth={2.5} />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete && onDelete(trans)}
-                    className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-destructive/10 hover:text-destructive transition-all active:scale-90"
-                  >
-                    <Trash2 size={16} strokeWidth={2.5} />
-                  </Button>
-                </>
+                <div className="flex items-center gap-1">
+                  {/* Group các nút lại để đảm bảo chúng đi cùng nhau */}
+                  {!isTrash ? (
+                    <>
+                      <input
+                        type="file"
+                        className="hidden"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-primary/10 hover:text-primary"
+                      >
+                        <ImagePlus size={14} strokeWidth={2.5} />
+                      </Button>
+                      <Link href={`/transactions/${trans.id}/logs`}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-primary/10 hover:text-primary"
+                        >
+                          <History size={14} strokeWidth={2.5} />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEdit && onEdit(trans)}
+                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-primary/10 hover:text-primary"
+                      >
+                        <Settings2 size={14} strokeWidth={2.5} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDelete && onDelete(trans)}
+                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 size={14} strokeWidth={2.5} />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onRestore && onRestore(trans)}
+                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-emerald-500/10 hover:text-emerald-500"
+                      >
+                        <RotateCcw size={14} strokeWidth={2.5} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onForceDelete && onForceDelete(trans)}
+                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 size={14} strokeWidth={2.5} />
+                      </Button>
+                    </>
+                  )}
+                </div>
               )
             )}
           </div>

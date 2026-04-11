@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWallets } from "@/hooks/useWallets";
-import { useCategories } from "@/hooks/useCategories"; // Đổi sang hook categories chuẩn
+import { useCategories } from "@/hooks/useCategories";
 import {
   Wallet as WalletIcon,
   Coins,
@@ -26,6 +26,7 @@ import {
   Tag,
   Loader2,
   Sparkles,
+  PencilLine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +54,6 @@ export function EditTransactionModal({
   const [walletId, setWalletId] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  // Điền dữ liệu cũ vào form khi mở modal
   useEffect(() => {
     if (transaction && isOpen) {
       setAmount(transaction.amount.toString());
@@ -85,52 +85,61 @@ export function EditTransactionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-[2.5rem] border-none p-0 overflow-hidden max-w-md bg-background shadow-2xl font-sans outline-none">
-        {/* HEADER VỚI HIỆU ỨNG GRADIENT NHẸ */}
-        <div className="bg-primary p-8 pb-10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
+      <DialogContent className="w-[calc(100%-2rem)] md:max-w-md rounded-[2.5rem] border-none p-0 overflow-hidden bg-background shadow-2xl font-sans outline-none mx-auto transition-all">
+        <div className="bg-gradient-to-br from-primary via-primary/90 to-blue-600 p-8 pb-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/10 rounded-full blur-2xl -ml-12 -mb-12" />
 
           <DialogHeader className="relative z-10">
-            <DialogTitle className="text-3xl font-black uppercase tracking-tighter flex items-center gap-3 text-white">
-              <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
-                <Sparkles size={24} className="text-white" />
-              </div>
-              Hiệu chỉnh
-            </DialogTitle>
-            <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mt-1 ml-1">
-              Mã GD: #{transaction?.id?.slice(-6).toUpperCase()}
-            </p>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl md:text-3xl font-black uppercase tracking-tighter flex items-center gap-3 text-white leading-none">
+                <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl shadow-lg border border-white/20 shrink-0">
+                  <PencilLine
+                    size={24}
+                    className="text-white"
+                    strokeWidth={2.5}
+                  />
+                </div>
+                <span>Hiệu chỉnh</span>
+              </DialogTitle>
+            </div>
+            <div className="flex items-center gap-2 mt-3 opacity-80">
+              <Sparkles size={12} className="text-blue-200" />
+              <p className="text-white text-[9px] font-black uppercase tracking-[0.2em]">
+                Mã GD: #{transaction?.id?.slice(-6).toUpperCase() || "N/A"}
+              </p>
+            </div>
           </DialogHeader>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="p-8 space-y-6 -mt-6 bg-background rounded-t-[2.5rem] relative z-20"
+          className="p-6 md:p-8 space-y-6 -mt-8 bg-background rounded-t-[2.5rem] relative z-20"
         >
-          {/* SỐ TIỀN - DÙNG FONT MONEY BỰ */}
-          <div className="space-y-2">
+          {/* SỐ TIỀN */}
+          <div className="space-y-2.5">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
-              <Coins size={12} /> Giá trị giao dịch
+              <Coins size={12} className="text-primary" /> Giá trị giao dịch
             </label>
             <div className="relative group">
               <Input
                 type="number"
                 required
-                className="h-16 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-money text-3xl font-black tracking-tighter focus:bg-background transition-all pr-16 text-primary"
+                className="h-16 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-money text-2xl md:text-3xl font-black tracking-tighter focus:bg-background transition-all pr-16 text-primary"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
               />
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-xs opacity-30 border-l pl-3 border-border/50">
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-[10px] opacity-30 border-l pl-3 border-border/50 uppercase tracking-widest">
                 VNĐ
               </div>
             </div>
           </div>
 
           {/* GHI CHÚ */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
-              <AlignLeft size={12} /> Nội dung ghi chép
+              <AlignLeft size={12} className="text-primary" /> Nội dung ghi chép
             </label>
             <Input
               type="text"
@@ -142,35 +151,34 @@ export function EditTransactionModal({
           </div>
 
           {/* NGÀY GIAO DỊCH */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
-              <CalendarDays size={12} /> Thời gian ghi nhận
+              <CalendarDays size={12} className="text-primary" /> Thời gian ghi
+              nhận
             </label>
-            <div className="relative">
-              <Input
-                type="date"
-                required
-                className="h-14 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-bold focus:bg-background transition-all"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
+            <Input
+              type="date"
+              required
+              className="h-14 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-bold focus:bg-background transition-all"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
 
           {/* CHỌN VÍ & DANH MỤC */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
-                <WalletIcon size={12} /> Nguồn tiền
+                <WalletIcon size={12} className="text-primary" /> Nguồn tiền
               </label>
               <Select
                 value={walletId || undefined}
                 onValueChange={(val) => setWalletId(val)}
               >
-                <SelectTrigger className="h-14 rounded-2xl border-2 border-border/50 font-bold">
+                <SelectTrigger className="h-14 rounded-2xl border-2 border-border/50 font-bold bg-muted/20">
                   <SelectValue placeholder="Chọn ví" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl">
+                <SelectContent className="rounded-2xl shadow-2xl">
                   {wallets.map((w: any) => (
                     <SelectItem key={w.id} value={w.id} className="rounded-xl">
                       {w.name}
@@ -180,18 +188,18 @@ export function EditTransactionModal({
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
-                <Tag size={12} /> Phân loại
+                <Tag size={12} className="text-primary" /> Phân loại
               </label>
               <Select
                 value={categoryId || undefined}
                 onValueChange={(val) => setCategoryId(val)}
               >
-                <SelectTrigger className="h-14 rounded-2xl border-2 border-border/50 font-bold">
+                <SelectTrigger className="h-14 rounded-2xl border-2 border-border/50 font-bold bg-muted/20">
                   <SelectValue placeholder="Danh mục" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl">
+                <SelectContent className="rounded-2xl shadow-2xl">
                   {categories.map((c: any) => (
                     <SelectItem key={c.id} value={c.id} className="rounded-xl">
                       {c.name}
@@ -208,15 +216,15 @@ export function EditTransactionModal({
             disabled={
               isUpdating || !amount || !date || !walletId || !categoryId
             }
-            className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95"
+            className="w-full h-16 mt-2 rounded-2xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] bg-primary"
           >
             {isUpdating ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="animate-spin" size={18} />
-                <span>ĐANG LƯU...</span>
+                <span>Đang lưu...</span>
               </div>
             ) : (
-              "LƯU THAY ĐỔI"
+              "Lưu thay đổi"
             )}
           </Button>
         </form>

@@ -5,73 +5,56 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* 🔥 KẾT NỐI FONT CHỮ TÀI CHÍNH */
+  /* 🔥 HỆ THỐNG FONT & TYPOGRAPHY */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular;
-  
-  /* Tạo class font-money riêng để dùng cho số tiền */
   --font-money: var(--font-mono);
 
+  /* 📏 AUTO-RESPONSIVE RADIUS */
+  /* Bo góc sẽ tự nhỏ lại một chút trên mobile để không bị "nuốt" diện tích */
+  --radius-lg: clamp(0.8rem, 2vw, 1.25rem);
+  --radius-xl: calc(var(--radius-lg) * 1.4);
+  --radius-2xl: calc(var(--radius-lg) * 2);
+
+  /* COLORS */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 2);
 }
 
 :root {
-  /* 💎 BẢNG MÀU FINTECH CAO CẤP (Xanh Azure & Slate) */
-  --background: oklch(0.99 0.005 240); /* Trắng xám cực nhẹ tránh mỏi mắt */
-  --foreground: oklch(0.2 0.04 240);    /* Chữ đen xanh đậm uý tín */
-  
-  /* Primary: Xanh đậm chất ngân hàng điện tử */
+  /* 💎 FINTECH PALETTE - LIGHT MODE */
+  --background: oklch(0.99 0.005 240);
+  --foreground: oklch(0.2 0.04 240);
   --primary: oklch(0.55 0.18 250); 
   --primary-foreground: oklch(1 0 0);
-
-  /* Card: Trắng tinh khiết, đổ bóng sẽ đẹp hơn */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.04 240);
-  
   --muted: oklch(0.95 0.01 240);
   --muted-foreground: oklch(0.45 0.03 240);
-  
   --accent: oklch(0.92 0.04 250);
   --accent-foreground: oklch(0.55 0.18 250);
-
   --border: oklch(0.9 0.01 240);
   --input: oklch(0.9 0.01 240);
   --ring: oklch(0.55 0.18 250);
-
-  --radius: 1.25rem; /* Bo góc rộng hơn cho hiện đại */
 }
 
 .dark {
+  /* 💎 FINTECH PALETTE - DARK MODE */
   --background: oklch(0.12 0.02 250);
   --foreground: oklch(0.95 0.01 240);
-  
   --card: oklch(0.16 0.02 250);
   --card-foreground: oklch(0.95 0.01 240);
-  
   --primary: oklch(0.65 0.15 235);
   --primary-foreground: oklch(0.1 0.02 250);
-
   --muted: oklch(0.22 0.02 250);
   --muted-foreground: oklch(0.7 0.01 240);
-  
-  --accent: oklch(0.25 0.05 240);
-  --accent-foreground: oklch(1 0 0);
-
   --border: oklch(1 0 0 / 10%);
 }
 
@@ -79,27 +62,39 @@
   * {
     @apply border-border outline-ring/50 transition-colors duration-200;
   }
+  
+  /* 📱 FIX TRÀN NGANG TOÀN HỆ THỐNG */
+  html, body {
+    @apply overflow-x-hidden w-full max-w-[100vw];
+    /* Chống hiện tượng bị "nhảy" layout khi thanh scroll xuất hiện */
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    /* Hiệu ứng hạt bụi li ti cho background sang trọng hơn */
-    background-image: radial-gradient(oklch(0.8 0.02 240 / 0.1) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(oklch(0.8 0.02 240 / 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
 }
 
-/* 🔥 CLASS TIỆN ÍCH DÀNH RIÊNG CHO APP TÀI CHÍNH */
 @layer utilities {
+  /* 🚀 AUTO-RESPONSIVE CONTAINER CLASS */
+  /* Ông dùng class 'responsive-container' cho các layout chính */
+  .responsive-container {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+
   .font-money {
     font-family: var(--font-mono);
     letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums; /* Giúp các con số thẳng hàng khi xếp dọc */
   }
   
-  /* Hiệu ứng card nổi khối tinh tế */
   .glass-card {
-    @apply bg-card/80 backdrop-blur-md border border-white/20 shadow-xl;
+    @apply bg-card/60 backdrop-blur-xl border border-white/10 dark:border-white/5 shadow-2xl;
   }
 
-  /* Làm nổi bật số tiền khi dương/âm */
+  /* Hiệu ứng mượt cho các bảng số liệu */
   .amount-up { @apply text-emerald-500 font-money; }
   .amount-down { @apply text-red-500 font-money; }
 }

@@ -21,3 +21,9 @@ export interface TransactionRequest {
   note: string;
   date: string;
 }
+
+export interface OCRResponse {
+  amount: number;
+  suggestedNote: string;
+  receiptUrl: string;
+}

@@ -7,60 +7,51 @@ interface GroupTransactionListItemProps {
   trans: any;
 }
 
-export function GroupTransactionListItem({
-  trans,
-}: GroupTransactionListItemProps) {
+// ListItem
+export function GroupTransactionListItem({ trans }: any) {
   const isExpense = trans.categoryType === "EXPENSE";
-
   return (
-    <div className="flex items-center justify-between p-5 border-2 border-border/50 rounded-[2rem] bg-card hover:border-primary/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-      {/* VẠCH MÀU ĐỊNH DANH */}
+    <div className="flex items-center justify-between p-5 border border-border/40 rounded-3xl bg-card hover:border-primary/30 hover:shadow-xl transition-all duration-500 relative overflow-hidden group">
       <div
         className={cn(
-          "absolute left-0 top-0 bottom-0 w-2 transition-colors",
-          isExpense ? "bg-red-500" : "bg-emerald-500",
+          "absolute left-0 top-0 bottom-0 w-1.5 transition-colors",
+          isExpense ? "bg-red-500/80" : "bg-emerald-500/80",
         )}
       />
-
-      <div className="flex items-center gap-4 pl-3">
-        {/* ICON CATEGORY */}
+      <div className="flex items-center gap-4 pl-2">
         <div
           className={cn(
-            "w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shadow-inner transition-transform group-hover:scale-105 shrink-0",
+            "w-11 h-11 rounded-2xl flex items-center justify-center font-black text-base shadow-sm border border-border/20 group-hover:scale-110 transition-transform",
             isExpense
-              ? "bg-red-500/10 text-red-500"
-              : "bg-emerald-500/10 text-emerald-500",
+              ? "bg-red-500/5 text-red-500"
+              : "bg-emerald-500/5 text-emerald-500",
           )}
         >
           {trans.categoryName.charAt(0).toUpperCase()}
         </div>
-
         <div className="space-y-1.5 min-w-0">
-          <h4 className="font-black uppercase tracking-tight text-sm text-foreground truncate max-w-[150px] sm:max-w-xs leading-none">
+          <h4 className="font-bold tracking-tight p-2 text-sm text-foreground truncate max-w-[150px] leading-none uppercase">
             {trans.note || trans.categoryName}
           </h4>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="flex items-center gap-1.5 text-[9px] font-black text-muted-foreground uppercase tracking-widest bg-muted/60 px-2.5 py-1 rounded-lg border border-border/50">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/40 px-2.5 py-1 rounded-lg border border-border/50">
               <CalendarDays size={10} /> {trans.date}
             </span>
-            <span className="flex items-center gap-1.5 text-[9px] font-black text-muted-foreground uppercase tracking-widest bg-muted/60 px-2.5 py-1 rounded-lg border border-border/50">
-              <User size={10} className="text-primary" />{" "}
-              {trans.createdBy || "Member"}
+            <span className="flex items-center gap-1.5 text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">
+              <User size={10} /> {trans.createdBy}
             </span>
           </div>
         </div>
       </div>
-
-      {/* SỐ TIỀN HIỂN THỊ CỰC MẠNH */}
       <div
         className={cn(
-          "text-xl sm:text-2xl font-black tracking-tighter pr-2",
+          "text-xl sm:text-2xl font-black tracking-tighter font-money pr-2",
           isExpense ? "text-red-500" : "text-emerald-500",
         )}
       >
         {isExpense ? "-" : "+"}
-        {trans.amount.toLocaleString()}đ
+        {trans.amount.toLocaleString()}
+        <span className="text-xs ml-0.5 opacity-60 font-black">đ</span>
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import {
   Loader2,
   Settings2,
   History,
-  Users, // Import thêm icon Users cho đẹp
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -40,7 +40,6 @@ export function TransactionCard({
   onForceDelete,
 }: TransactionCardProps) {
   const isExpense = trans.categoryType === "EXPENSE";
-
   const { data: user, isLoading: isProfileLoading } = useProfile();
 
   const isPersonal = !trans.groupName;
@@ -69,111 +68,96 @@ export function TransactionCard({
     <>
       <div
         className={cn(
-          "group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:p-6 border-2 border-border/50 rounded-[2.5rem] bg-card hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden",
+          "group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 border-2 border-border/40 rounded-3xl bg-card hover:shadow-xl hover:border-primary/30 transition-all duration-300 overflow-hidden",
           isTrash && "opacity-60 grayscale hover:grayscale-0 hover:opacity-100",
         )}
       >
-        {/* VẠCH MÀU ĐỊNH DANH BÊN TRÁI */}
+        {/* VẠCH MÀU */}
         <div
           className={cn(
-            "absolute left-0 top-0 bottom-0 w-2 transition-colors",
-            isExpense ? "bg-red-500" : "bg-emerald-500",
+            "absolute left-0 top-0 bottom-0 w-1.5 transition-colors",
+            isExpense ? "bg-red-500/80" : "bg-emerald-500/80",
           )}
         />
 
-        {/* NỬA TRÁI: ICON + THÔNG TIN CHI TIẾT */}
-        <div className="flex items-center gap-4 w-full sm:w-auto pl-2 sm:pl-3">
+        <div className="flex items-center gap-4 w-full sm:w-auto pl-2">
           {/* ICON DANH MỤC */}
           <div
             className={cn(
-              "w-14 h-14 shrink-0 rounded-[1.25rem] flex items-center justify-center font-black text-xl shadow-inner transition-transform group-hover:scale-105",
+              "w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm border border-border/50 transition-transform group-hover:scale-105",
               isExpense
-                ? "bg-red-500/10 text-red-500"
-                : "bg-emerald-500/10 text-emerald-500",
+                ? "bg-red-500/5 text-red-500"
+                : "bg-emerald-500/5 text-emerald-500",
             )}
           >
             {trans.categoryName?.charAt(0).toUpperCase()}
           </div>
 
-          <div className="flex flex-col gap-2 flex-1">
-            {/* DÒNG 1: TIÊU ĐỀ VÀ NÚT XEM ẢNH */}
-            <div className="flex items-center gap-3">
-              <h4 className="font-black uppercase tracking-tight text-foreground text-base sm:text-lg leading-none truncate max-w-[180px] sm:max-w-md">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold tracking-tight p-2 text-foreground text-sm sm:text-base leading-none truncate max-w-37.5 sm:max-w-xs">
                 {trans.note || trans.categoryName}
               </h4>
 
-              {/* NÚT XEM HÓA ĐƠN DẠNG BADGE */}
               {trans.receiptUrl && (
                 <Button
                   onClick={() => setIsImageViewerOpen(true)}
                   variant="outline"
-                  className="h-6 px-2.5 rounded-lg border-primary/20 bg-primary/5 hover:bg-primary hover:text-primary-foreground text-primary text-[10px] font-black uppercase tracking-widest gap-1.5 transition-colors shadow-none"
-                  title="Xem hóa đơn đính kèm"
+                  className="h-5 px-2 rounded-md border-primary/20 bg-primary/5 hover:bg-primary hover:text-white text-primary text-[9px] font-black uppercase tracking-tighter gap-1 transition-all"
                 >
-                  <Paperclip size={12} /> Bill
+                  <Paperclip size={10} /> Bill
                 </Button>
               )}
             </div>
 
-            {/* DÒNG 2: BADGES THÔNG TIN */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/60 px-2.5 py-1.5 rounded-lg border border-border/50">
-                <CalendarDays size={12} /> {trans.date}
+            {/* BADGES THÔNG TIN - Typography nhỏ và tinh tế */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 px-2 py-1 rounded-lg">
+                <CalendarDays size={10} /> {trans.date}
               </span>
 
-              {/* 🔥 HIỂN THỊ VÍ */}
-              <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/60 px-2.5 py-1.5 rounded-lg border border-border/50">
-                <Wallet size={12} /> {trans.walletName}
+              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 px-2 py-1 rounded-lg">
+                <Wallet size={10} /> {trans.walletName}
               </span>
 
-              {/* 🔥 HIỂN THỊ TÊN NHÓM NẾU CÓ */}
               {!isPersonal && (
-                <span className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1.5 rounded-lg border border-primary/10">
-                  <Users size={12} /> {trans.groupName}
+                <span className="flex items-center gap-1 text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded-lg border border-primary/10">
+                  <Users size={10} /> {trans.groupName}
                 </span>
               )}
 
-              <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/60 px-2.5 py-1.5 rounded-lg border border-border/50">
-                <Tag size={12} /> {trans.categoryName}
+              <span className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/40 px-2 py-1 rounded-lg">
+                <Tag size={10} /> {trans.categoryName}
               </span>
 
-              {/* HIỂN THỊ NGƯỜI TẠO */}
               {!isPersonal && trans.userName && (
-                <span className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/60 px-2.5 py-1.5 rounded-lg border border-border/50">
-                  Bởi: {trans.userName}
+                <span className="text-[9px] font-bold text-muted-foreground/60 uppercase">
+                  • {isOwner ? "BẠN" : trans.userName}
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* NỬA PHẢI: SỐ TIỀN + CÁC NÚT HÀNH ĐỘNG */}
-        <div className="flex flex-row sm:flex-row-reverse w-full sm:w-auto items-center justify-between sm:justify-start gap-4 pl-[72px] sm:pl-0 pr-2">
-          {/* SỐ TIỀN */}
+        {/* NỬA PHẢI: SỐ TIỀN + ACTIONS */}
+        <div className="flex flex-row sm:flex-row-reverse w-full sm:w-auto items-center justify-between sm:justify-start gap-5 pl-[64px] sm:pl-0 pr-1">
           <div
             className={cn(
-              "text-2xl sm:text-3xl font-black tracking-tighter shrink-0",
+              "text-xl sm:text-2xl font-black tracking-tighter shrink-0 font-money",
               isExpense ? "text-red-500" : "text-emerald-500",
             )}
           >
             {isExpense ? "-" : "+"}
-            {trans.amount?.toLocaleString()}đ
+            {trans.amount?.toLocaleString()}
+            <span className="text-xs ml-0.5 opacity-70">đ</span>
           </div>
 
-          {/* NHÓM NÚT ACTION */}
-          <div className="flex items-center gap-1.5 sm:opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-all duration-300">
             {isProfileLoading ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled
-                className="rounded-xl bg-transparent border-transparent"
-              >
-                <Loader2
-                  size={16}
-                  className="animate-spin text-muted-foreground"
-                />
-              </Button>
+              <Loader2
+                size={14}
+                className="animate-spin text-muted-foreground mx-2"
+              />
             ) : isTrash ? (
               isOwner && (
                 <>
@@ -181,19 +165,17 @@ export function TransactionCard({
                     variant="ghost"
                     size="icon"
                     onClick={() => onRestore && onRestore(trans)}
-                    className="rounded-xl bg-muted/50 hover:bg-emerald-500/10 hover:text-emerald-500 text-muted-foreground border border-transparent hover:border-emerald-500/20"
-                    title="Khôi phục"
+                    className="w-8 h-8 rounded-xl bg-muted/50 hover:bg-emerald-500/10 hover:text-emerald-500"
                   >
-                    <RotateCcw size={16} />
+                    <RotateCcw size={14} />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => onForceDelete && onForceDelete(trans)}
-                    className="rounded-xl bg-muted/50 hover:bg-destructive/10 hover:text-destructive text-muted-foreground border border-transparent hover:border-destructive/20"
-                    title="Xóa vĩnh viễn"
+                    className="w-8 h-8 rounded-xl bg-muted/50 hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </Button>
                 </>
               )
@@ -204,7 +186,7 @@ export function TransactionCard({
                     type="file"
                     className="hidden"
                     ref={fileInputRef}
-                    accept="image/png, image/jpeg, image/jpg"
+                    accept="image/*"
                     onChange={handleFileChange}
                   />
 
@@ -213,18 +195,13 @@ export function TransactionCard({
                     size="icon"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary text-muted-foreground border border-transparent hover:border-primary/20"
-                    title={
-                      trans.receiptUrl ? "Đổi hóa đơn khác" : "Đính kèm hóa đơn"
-                    }
+                    className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary"
+                    title="Đính kèm Bill"
                   >
                     {isUploading ? (
-                      <Loader2
-                        size={16}
-                        className="animate-spin text-primary"
-                      />
+                      <Loader2 size={14} className="animate-spin" />
                     ) : (
-                      <ImagePlus size={16} />
+                      <ImagePlus size={14} />
                     )}
                   </Button>
 
@@ -232,10 +209,9 @@ export function TransactionCard({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary text-muted-foreground border border-transparent hover:border-primary/20"
-                      title="Xem chi tiết lịch sử"
+                      className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary"
                     >
-                      <History size={16} />
+                      <History size={14} />
                     </Button>
                   </Link>
 
@@ -243,20 +219,18 @@ export function TransactionCard({
                     variant="ghost"
                     size="icon"
                     onClick={() => onEdit && onEdit(trans)}
-                    className="rounded-xl bg-muted/50 hover:bg-primary/10 hover:text-primary text-muted-foreground border border-transparent hover:border-primary/20"
-                    title="Sửa giao dịch"
+                    className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-primary/10 hover:text-primary"
                   >
-                    <Settings2 size={16} />
+                    <Settings2 size={14} />
                   </Button>
 
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => onDelete && onDelete(trans)}
-                    className="rounded-xl bg-muted/50 hover:bg-destructive/10 hover:text-destructive text-muted-foreground border border-transparent hover:border-destructive/20"
-                    title="Xóa giao dịch"
+                    className="w-8 h-8 rounded-xl bg-muted/30 hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </Button>
                 </>
               )
@@ -265,15 +239,14 @@ export function TransactionCard({
         </div>
       </div>
 
-      {/* POPUP PHÓNG TO HÓA ĐƠN */}
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-3xl bg-transparent border-none shadow-none p-0 flex justify-center items-center outline-none">
+        <DialogContent className="max-w-3xl bg-transparent border-none p-0 flex justify-center items-center outline-none">
           <DialogTitle className="sr-only">Hình ảnh hóa đơn</DialogTitle>
           {trans.receiptUrl && (
             <img
               src={trans.receiptUrl}
-              alt="Hóa đơn giao dịch"
-              className="max-h-[85vh] max-w-full object-contain rounded-[2rem] shadow-2xl border-4 border-white/20"
+              alt="Hóa đơn"
+              className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-2xl border-4 border-white/10"
             />
           )}
         </DialogContent>

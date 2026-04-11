@@ -1,7 +1,8 @@
-import { Activity, Link, SearchX, Users } from "lucide-react";
+import { Activity, SearchX, Users } from "lucide-react";
 import { TransactionCard } from "./TransactionCard";
 import { TransactionPagination } from "./TransactionPagination";
 import { Button } from "../ui/button";
+import Link from "next/link"; // Nhớ dùng Link của next/link
 
 interface GroupTabProps {
   groupId: string;
@@ -28,9 +29,9 @@ export function GroupTab({
 }: GroupTabProps) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-end">
-        <h3 className="font-black uppercase tracking-widest text-sm text-muted-foreground">
-          Giao dịch nhóm
+      <div className="flex justify-between items-end px-1">
+        <h3 className="font-black uppercase tracking-[0.15em] text-[11px] text-muted-foreground/80">
+          Giao dịch nhóm chung
         </h3>
         <div className="flex items-center gap-2">
           {groupId && groupsLength > 0 && (
@@ -38,23 +39,23 @@ export function GroupTab({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-3 rounded-full bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest"
+                className="h-7 px-3 rounded-xl bg-primary/5 border-primary/20 hover:bg-primary hover:text-white text-primary text-[9px] font-black uppercase tracking-widest transition-all"
               >
-                <Activity size={12} className="mr-1.5" /> Nhật ký nhóm
+                <Activity size={12} className="mr-1.5" /> Nhật ký
               </Button>
             </Link>
           )}
-          <span className="text-[10px] font-bold uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-full">
+          <span className="font-money text-[10px] font-bold uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-full border border-primary/10">
             Tổng: {groupData?.totalElements || 0}
           </span>
         </div>
       </div>
 
       {groupsLength === 0 ? (
-        <div className="py-24 flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] text-muted-foreground bg-card">
-          <Users size={48} className="mb-4 opacity-20" />
-          <span className="font-black uppercase tracking-widest text-xs">
-            Chưa tham gia nhóm
+        <div className="py-24 flex flex-col items-center justify-center border-2 border-dashed border-border/60 rounded-[2.5rem] text-muted-foreground bg-card/30">
+          <Users size={48} className="mb-4 opacity-10" />
+          <span className="font-black uppercase tracking-[0.2em] text-[10px] opacity-60">
+            Bạn chưa tham gia nhóm nào
           </span>
         </div>
       ) : isLoading ? (
@@ -62,15 +63,15 @@ export function GroupTab({
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-28 bg-muted rounded-[2rem] animate-pulse"
+              className="h-24 bg-muted/40 rounded-3xl animate-pulse border border-border/50"
             />
           ))}
         </div>
       ) : groupTransactions.length === 0 ? (
-        <div className="py-24 flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] text-muted-foreground bg-card">
-          <SearchX size={48} className="mb-4 opacity-20" />
-          <span className="font-black uppercase tracking-widest text-xs">
-            Nhóm trống
+        <div className="py-24 flex flex-col items-center justify-center border-2 border-dashed border-border/60 rounded-[2.5rem] text-muted-foreground bg-card/30">
+          <SearchX size={48} className="mb-4 opacity-10" />
+          <span className="font-black uppercase tracking-[0.2em] text-[10px] opacity-60">
+            Chưa có giao dịch trong nhóm này
           </span>
         </div>
       ) : (
@@ -87,11 +88,13 @@ export function GroupTab({
       )}
 
       {groupData && groupData.totalPages > 1 && (
-        <TransactionPagination
-          currentPage={groupPage}
-          totalPages={groupData.totalPages}
-          onPageChange={setGroupPage}
-        />
+        <div className="pt-4 border-t border-border/40">
+          <TransactionPagination
+            currentPage={groupPage}
+            totalPages={groupData.totalPages}
+            onPageChange={setGroupPage}
+          />
+        </div>
       )}
     </div>
   );

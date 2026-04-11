@@ -2,6 +2,7 @@ import { axiosInstance } from "@/lib/axios";
 import { ApiResponse } from "@/types/auth";
 import { TransactionResponse } from "@/types/group";
 import {
+  OCRResponse,
   PaginatedResponse,
   Transaction,
   TransactionRequest,
@@ -151,5 +152,19 @@ export const transactionService = {
       { params: { note } }
     );
     return response.data; 
+  },
+
+  analyzeReceipt: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axiosInstance.post<ApiResponse<OCRResponse>>(
+      "/transactions/analyze-receipt",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response.data;
   },
 };

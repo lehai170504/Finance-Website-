@@ -57,28 +57,31 @@ export function TransactionPagination({
     <div className="pt-8 pb-4">
       <Pagination>
         <PaginationContent className="gap-2">
+          {/* NÚT TRƯỚC */}
           <PaginationItem>
             <PaginationPrevious
               onClick={() => onPageChange(Math.max(0, currentPage - 1))}
               className={cn(
-                "cursor-pointer rounded-full font-black uppercase text-[10px] tracking-widest px-4",
-                currentPage === 0 && "pointer-events-none opacity-50",
+                "cursor-pointer rounded-xl font-black uppercase text-[9px] tracking-[0.2em] px-4 h-10 border-border/50 hover:bg-muted/50 transition-all",
+                currentPage === 0 && "pointer-events-none opacity-30",
               )}
             />
           </PaginationItem>
 
+          {/* DANH SÁCH TRANG */}
           {generatePagination().map((p, i) => (
             <PaginationItem key={i}>
               {p === "ellipsis" ? (
-                <PaginationEllipsis />
+                <PaginationEllipsis className="text-muted-foreground/50" />
               ) : (
                 <PaginationLink
                   onClick={() => onPageChange(p as number)}
                   isActive={currentPage === p}
                   className={cn(
-                    "cursor-pointer rounded-full font-black text-xs w-10 h-10",
-                    currentPage === p &&
-                      "bg-primary text-primary-foreground shadow-md hover:text-primary-foreground",
+                    "cursor-pointer rounded-xl font-money text-[13px] w-10 h-10 border-border/50 transition-all duration-300",
+                    currentPage === p
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary hover:bg-primary/90 hover:text-primary-foreground scale-110 z-10"
+                      : "hover:bg-muted hover:text-foreground text-muted-foreground",
                   )}
                 >
                   {(p as number) + 1}
@@ -87,15 +90,16 @@ export function TransactionPagination({
             </PaginationItem>
           ))}
 
+          {/* NÚT SAU */}
           <PaginationItem>
             <PaginationNext
               onClick={() =>
                 onPageChange(Math.min(totalPages - 1, currentPage + 1))
               }
               className={cn(
-                "cursor-pointer rounded-full font-black uppercase text-[10px] tracking-widest px-4",
+                "cursor-pointer rounded-xl font-black uppercase text-[9px] tracking-[0.2em] px-4 h-10 border-border/50 hover:bg-muted/50 transition-all",
                 currentPage >= totalPages - 1 &&
-                  "pointer-events-none opacity-50",
+                  "pointer-events-none opacity-30",
               )}
             />
           </PaginationItem>

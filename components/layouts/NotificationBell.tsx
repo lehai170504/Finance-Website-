@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Trash2, CheckCheck } from "lucide-react";
+import { Bell, Trash2, CheckCheck, Inbox } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -39,11 +39,15 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative rounded-full hover:bg-primary/10"
+          className="relative w-10 h-10 rounded-xl bg-muted/40 hover:bg-primary/10 hover:text-primary transition-all duration-300 border border-border/20 shadow-sm"
         >
-          <Bell size={20} className="text-muted-foreground" />
+          <Bell
+            size={18}
+            strokeWidth={2.5}
+            className="text-muted-foreground group-hover:text-primary"
+          />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-background px-1 shadow-sm">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black font-money flex items-center justify-center rounded-lg border-2 border-background shadow-lg animate-in zoom-in duration-300">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -52,30 +56,43 @@ export function NotificationBell() {
 
       <PopoverContent
         align="end"
-        className="w-80 p-0 rounded-2xl shadow-2xl border-2 overflow-hidden"
+        className="w-85 p-0 rounded-[1.5rem] shadow-2xl border-border/40 bg-background/95 backdrop-blur-2xl overflow-hidden font-sans mt-2"
       >
-        <div className="p-4 border-b flex justify-between items-center bg-muted/20">
-          <h4 className="font-black uppercase text-[10px] tracking-[0.2em]">
-            Thông báo
-          </h4>
+        {/* HEADER */}
+        <div className="p-4 px-5 border-b border-border/40 flex justify-between items-center bg-muted/30">
+          <div className="flex items-center gap-2">
+            <h4 className="font-black uppercase text-[10px] tracking-[0.2em] text-foreground/70">
+              Thông báo
+            </h4>
+            {unreadCount > 0 && (
+              <span className="bg-primary/10 text-primary text-[8px] font-black px-1.5 py-0.5 rounded-md border border-primary/10 animate-pulse">
+                {unreadCount} MỚI
+              </span>
+            )}
+          </div>
+
           <div className="flex gap-1">
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => markReadAll()}
-                className="h-7 px-2 text-[9px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1 transition-all"
+                className="h-7 px-3 rounded-lg text-[9px] font-black uppercase text-primary hover:bg-primary/10 flex items-center gap-1.5 transition-all"
               >
-                <CheckCheck size={12} /> Đọc hết
+                <CheckCheck size={12} strokeWidth={3} /> Đọc hết
               </Button>
             )}
           </div>
         </div>
 
-        <ScrollArea className="h-80">
+        {/* LIST AREA */}
+        <ScrollArea className="h-85">
           {isLoading ? (
-            <div className="py-20 text-center animate-pulse text-[10px] font-bold uppercase text-muted-foreground">
-              Đang tải...
+            <div className="py-24 text-center flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 animate-pulse">
+                Đang kiểm tra...
+              </span>
             </div>
           ) : notifications.length > 0 ? (
             <div className="flex flex-col">
@@ -93,24 +110,25 @@ export function NotificationBell() {
                   <div
                     key={n.id}
                     className={cn(
-                      "relative p-4 border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-all group",
-                      !n.read && "bg-primary/5 border-l-2 border-l-primary",
+                      "relative p-5 border-b border-border/30 last:border-0 hover:bg-muted/40 cursor-pointer transition-all group",
+                      !n.read &&
+                        "bg-primary/[0.03] border-l-[3px] border-l-primary",
                     )}
                     onClick={() => !n.read && markRead([n.id])}
                   >
                     <p
                       className={cn(
-                        "text-[11px] leading-snug mb-1 pr-8 transition-all",
+                        "text-[12px] leading-relaxed mb-2 pr-6 transition-all",
                         !n.read
                           ? "font-bold text-foreground"
-                          : "font-medium text-muted-foreground",
+                          : "font-medium text-muted-foreground/80",
                       )}
                     >
                       {n.message}
                     </p>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-[9px] uppercase font-black text-muted-foreground/60">
+                      <span className="text-[9px] uppercase font-black text-muted-foreground/40 font-money tracking-tight">
                         {timeAgo}
                       </span>
                     </div>
@@ -120,32 +138,36 @@ export function NotificationBell() {
                         e.stopPropagation();
                         deleteNotes([n.id]);
                       }}
-                      className="absolute top-4 right-2 p-1.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-all"
-                      title="Xóa thông báo này"
+                      className="absolute top-5 right-3 p-1.5 opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                      title="Xóa"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} strokeWidth={2.5} />
                     </button>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="py-24 text-center text-muted-foreground font-bold uppercase text-[10px] tracking-widest">
-              Trống không...
+            <div className="py-24 flex flex-col items-center justify-center text-muted-foreground/30 gap-4">
+              <Inbox size={48} strokeWidth={1} />
+              <span className="font-black uppercase tracking-[0.3em] text-[10px]">
+                Trống không
+              </span>
             </div>
           )}
         </ScrollArea>
 
-        <div className="p-2 border-t bg-muted/10 flex justify-between items-center px-4">
-          <p className="text-[8px] font-black uppercase text-muted-foreground/50">
-            {notifications.length} thông báo
+        {/* FOOTER */}
+        <div className="p-3 px-5 border-t border-border/40 bg-muted/20 flex justify-between items-center">
+          <p className="text-[9px] font-black uppercase text-muted-foreground/40 font-money">
+            {notifications.length} LỊCH SỬ
           </p>
           {notifications.some((n: any) => n.read) && (
             <button
               onClick={handleDeleteRead}
-              className="text-[8px] font-black uppercase text-destructive hover:underline transition-all"
+              className="text-[9px] font-black uppercase text-destructive/60 hover:text-destructive hover:underline transition-all underline-offset-4"
             >
-              Xóa tất cả đã đọc
+              Dọn dẹp thông báo cũ
             </button>
           )}
         </div>

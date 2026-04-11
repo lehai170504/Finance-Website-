@@ -1,10 +1,9 @@
-// app/(dashboard)/profile/page.tsx
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { UserCog, ShieldAlert, Loader2 } from "lucide-react";
+import { UserCog, ShieldAlert, Loader2, Sparkles } from "lucide-react";
 
 import {
   useProfile,
@@ -28,42 +27,64 @@ export default function ProfilePage() {
 
   if (isFetchingProfile) {
     return (
-      <div className="flex-1 flex flex-col justify-center items-center h-[60vh] gap-4">
-        <Loader2 className="animate-spin text-primary" size={40} />
-        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] animate-pulse">
-          Đang truy xuất hồ sơ...
+      <div className="flex-1 flex flex-col justify-center items-center h-[60vh] gap-6 font-sans">
+        <div className="relative">
+          <Loader2
+            className="animate-spin text-primary"
+            size={48}
+            strokeWidth={2.5}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+          </div>
+        </div>
+        <span className="text-[11px] font-black text-primary uppercase tracking-[0.4em] animate-pulse">
+          Đang xác thực hồ sơ...
         </span>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 md:p-8 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* HEADER */}
-      <div className="flex flex-col space-y-3 mb-10 border-b border-border/50 pb-8 text-center sm:text-left">
-        <div className="inline-flex items-center gap-3 justify-center sm:justify-start">
-          <div className="p-3 bg-primary/10 rounded-2xl text-primary">
-            <UserCog size={32} strokeWidth={2.5} />
+    <div className="w-full max-w-2xl mx-auto p-4 md:p-8 mt-6 font-sans animate-in fade-in slide-in-from-bottom-6 duration-1000 mb-20">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col space-y-4 mb-12 text-center sm:text-left relative">
+        <div className="inline-flex items-center gap-4 justify-center sm:justify-start">
+          <div className="p-3.5 bg-primary/10 rounded-2xl text-primary border border-primary/20 shadow-inner group transition-all hover:rotate-3">
+            <UserCog
+              size={36}
+              strokeWidth={2.5}
+              className="group-hover:scale-110 transition-transform"
+            />
           </div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase leading-none">
-            CÀI ĐẶT <span className="text-primary">TÀI KHOẢN</span>
-          </h1>
+          <div>
+            <div className="flex items-center gap-2 text-primary mb-1 justify-center sm:justify-start">
+              <Sparkles size={14} fill="currentColor" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em]">
+                Thiết lập cá nhân
+              </span>
+            </div>
+            <h1 className="text-4xl md:text-5xl p-2 font-black tracking-tighter uppercase leading-none text-foreground">
+              CÀI ĐẶT <span className="text-primary">TÀI KHOẢN</span>
+            </h1>
+          </div>
         </div>
-        <p className="text-muted-foreground font-medium text-sm">
-          Tùy chỉnh thông tin cá nhân và thiết lập hàng rào bảo mật homie nhé.
+        <p className="text-muted-foreground font-medium text-base max-w-lg">
+          Tùy chỉnh danh tính của bạn trên Homie Finance và nâng cấp hàng rào
+          bảo mật.
         </p>
       </div>
 
       {/* TABS CONTAINER */}
       <Tabs defaultValue="info" className="w-full">
-        {/* TABS LIST - PILL DESIGN CÂN ĐỐI */}
-        <TabsList className="grid w-full grid-cols-2 mb-10 h-[60px] rounded-full bg-muted/40 p-1.5 border-2 border-border/50 backdrop-blur-sm shadow-inner relative overflow-hidden">
+        {/* TABS LIST: PREMIUM PILL DESIGN */}
+        <TabsList className="grid w-full grid-cols-2 mb-12 h-16 rounded-full bg-muted/30 p-1.5 border border-border/40 backdrop-blur-md shadow-2xl shadow-black/5 relative">
           <TabsTrigger
             value="info"
             className={cn(
-              "rounded-full uppercase tracking-[0.2em] font-black text-[10px] h-full transition-all duration-300 z-10",
-              "data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md",
-              "data-[state=inactive]:hover:bg-muted/60 data-[state=active]:scale-[0.98]",
+              "rounded-full uppercase tracking-[0.2em] font-black text-[10px] h-full transition-all duration-500 z-10",
+              "data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xl border border-transparent data-[state=active]:border-border/50",
+              "data-[state=inactive]:text-muted-foreground/60 data-[state=inactive]:hover:text-foreground data-[state=active]:scale-[0.97]",
             )}
           >
             Hồ sơ cá nhân
@@ -72,27 +93,26 @@ export default function ProfilePage() {
           <TabsTrigger
             value="security"
             className={cn(
-              "rounded-full uppercase tracking-[0.2em] font-black text-[10px] h-full transition-all duration-300 z-10",
-              "data-[state=active]:bg-background data-[state=active]:text-destructive data-[state=active]:shadow-md",
-              "data-[state=inactive]:hover:bg-muted/60 data-[state=active]:scale-[0.98]",
+              "rounded-full uppercase tracking-[0.2em] font-black text-[10px] h-full transition-all duration-500 z-10",
+              "data-[state=active]:bg-background data-[state=active]:text-destructive data-[state=active]:shadow-xl border border-transparent data-[state=active]:border-border/50",
+              "data-[state=inactive]:text-muted-foreground/60 data-[state=inactive]:hover:text-foreground data-[state=active]:scale-[0.97]",
             )}
           >
             Bảo mật & Mật khẩu
           </TabsTrigger>
         </TabsList>
 
-        {/* MAIN CONTENT CARD - CENTER FOCUSED LAYOUT */}
-        <div className="bg-card/40 backdrop-blur-xl p-8 md:p-14 rounded-[3.5rem] border-2 border-border/50 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] relative overflow-hidden">
-          {/* Decorative Ambient Light (Lớp sáng mờ trang trí góc) */}
-          <div className="absolute -top-24 -right-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none opacity-50" />
-          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none opacity-50" />
+        {/* MAIN CONTENT CARD */}
+        <div className="bg-card/40 backdrop-blur-2xl p-8 md:p-14 rounded-[3.5rem] border-2 border-border/40 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] relative overflow-hidden group">
+          {/* Decorative Elements (Ánh sáng ambient động) */}
+          <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none group-hover:bg-primary/20 transition-all duration-1000" />
+          <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
-          {/* Giới hạn độ rộng nội dung (max-w-md) để các input không bị giãn quá dài, tạo sự cân đối */}
           <div className="max-w-md mx-auto relative z-10">
-            {/* CONTENT: THÔNG TIN CÁ NHÂN */}
+            {/* CONTENT: HỒ SƠ */}
             <TabsContent
               value="info"
-              className="mt-0 outline-none focus-visible:ring-0"
+              className="mt-0 outline-none focus-visible:ring-0 animate-in fade-in slide-in-from-right-4 duration-500"
             >
               <ProfileForm user={user} updateMutation={updateMutation} />
             </TabsContent>
@@ -100,17 +120,23 @@ export default function ProfilePage() {
             {/* CONTENT: BẢO MẬT */}
             <TabsContent
               value="security"
-              className="mt-0 outline-none focus-visible:ring-0"
+              className="mt-0 outline-none focus-visible:ring-0 animate-in fade-in slide-in-from-left-4 duration-500"
             >
-              {/* Banner cảnh báo bảo mật được thiết kế lại cho cực gọn */}
-              <div className="mb-8 p-4 bg-destructive/5 rounded-2xl border border-destructive/10 flex items-center gap-4 transition-all hover:bg-destructive/10">
-                <div className="p-2 bg-destructive/10 rounded-xl text-destructive shrink-0">
+              {/* Security Alert Banner - Refined */}
+              <div className="mb-10 p-5 bg-destructive/[0.03] rounded-2xl border border-destructive/10 flex items-start gap-4 transition-all hover:bg-destructive/[0.06] group/alert">
+                <div className="p-2.5 bg-destructive text-white rounded-xl shadow-lg shadow-destructive/20 shrink-0 group-hover/alert:scale-110 transition-transform">
                   <ShieldAlert size={20} strokeWidth={2.5} />
                 </div>
-                <p className="text-[10px] font-black text-destructive/80 leading-snug uppercase tracking-tight">
-                  Ghi nhớ: Đừng chia sẻ mật khẩu cho bất kỳ ai, kể cả Admin
-                  homie nhé!
-                </p>
+                <div className="space-y-1">
+                  <h4 className="text-[11px] font-black text-destructive uppercase tracking-widest">
+                    Cảnh báo an toàn
+                  </h4>
+                  <p className="text-[10px] font-bold text-destructive/60 leading-relaxed uppercase tracking-tight">
+                    Tuyệt đối không chia sẻ mật khẩu cho bất kỳ ai, kể cả Admin
+                    homie nhé. Chúng tôi không bao giờ hỏi mật khẩu của bạn qua
+                    chat.
+                  </p>
+                </div>
               </div>
 
               <PasswordForm passwordMutation={passwordMutation} />
@@ -118,6 +144,13 @@ export default function ProfilePage() {
           </div>
         </div>
       </Tabs>
+
+      {/* FOOTER INFO */}
+      <div className="mt-12 text-center">
+        <p className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.5em]">
+          Homie Finance Security Protocol v4.0
+        </p>
+      </div>
     </div>
   );
 }

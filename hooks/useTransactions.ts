@@ -170,3 +170,34 @@ export const useSuggestCategory = () => {
     onError: (err) => console.error("Suggest category error:", err),
   });
 };
+
+export const useOCR = () => {
+  return useMutation({
+    mutationFn: (file: File) => transactionService.analyzeReceipt(file),
+    onSuccess: (res) => {
+      if (res.data) {
+        toast.success("Phân tích hóa đơn thành công!");
+      } else {
+        toast.error("Không tìm thấy thông tin trên hóa đơn này.");
+      }
+    },
+    onError: (err: any) => {
+      const status = err.response?.status;
+      const message = err.response?.data?.message;
+
+      if (status === 500) {
+        toast.error(
+          "File quá bự hoặc lỗi xử lý ảnh trên Server (500). Homie check lại log Backend nhé!",
+        );
+      } else if (status === 413) {
+        toast.error("Ảnh này quá nặng rồi! Kiếm cái nào dưới 2MB thôi.");
+      } else {
+        toast.error(
+          message || "Không thể đọc hóa đơn này. Thử chụp rõ hơn xem sao!",
+        );
+      }
+
+      console.error("OCR Debug:", { status, message, error: err });
+    },
+  });
+};

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlignLeft,
   Calendar,
@@ -11,7 +12,7 @@ import {
   Tag,
   Users,
   Wallet,
-  X,
+  ScanLine,
 } from "lucide-react";
 import {
   Dialog,
@@ -31,9 +32,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+// Hooks
 import { useWallets } from "@/hooks/useWallets";
 import { useCategories } from "@/hooks/useCategories";
-import { useTransactions, useSuggestCategory } from "@/hooks/useTransactions";
+import {
+  useTransactions,
+  useSuggestCategory,
+  useOCR,
+} from "@/hooks/useTransactions";
 import { useGroups } from "@/hooks/useGroups";
 
 interface QuickTransactionModalProps {
@@ -45,11 +51,16 @@ export function QuickTransactionModal({
   isOpen,
   onClose,
 }: QuickTransactionModalProps) {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Hooks lấy dữ liệu
   const { wallets, isLoading: isWalletsLoading } = useWallets();
   const { categories, isLoading: isCatsLoading } = useCategories();
   const { groups, isLoading: isGroupsLoading } = useGroups();
   const { createTransaction } = useTransactions();
   const { mutate: suggest, isPending: isSuggesting } = useSuggestCategory();
+  const { mutate: analyze, isPending: isAnalyzing } = useOCR();
 
   const isInitialLoading = isWalletsLoading || isCatsLoading;
 
@@ -64,7 +75,7 @@ export function QuickTransactionModal({
   });
 
   useEffect(() => {
-    if (formData.note.trim().length < 2) return;
+    if (formData.note.trim().length < 2 || isAnalyzing) return;
 
     const timer = setTimeout(() => {
       suggest(formData.note, {
@@ -77,12 +88,39 @@ export function QuickTransactionModal({
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [formData.note, suggest]);
+  }, [formData.note, suggest, isAnalyzing]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Ảnh bự quá (trên 5MB), AI đọc không nổi homie ơi!");
+        return;
+      }
+      analyze(file, {
+        onSuccess: (res) => {
+          if (res.data) {
+            setFormData((prev) => ({
+              ...prev,
+              amount: res.data.amount.toString(),
+              note: res.data.suggestedNote,
+            }));
+            toast.success("AI đã đọc hóa đơn xong!");
+          }
+        },
+      });
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.amount || !formData.walletId || !formData.categoryId) {
       toast.error("Thiếu thông tin rồi homie ơi!");
+      return;
+    }
+
+    if (formData.spaceType === "GROUP" && !formData.groupId) {
+      toast.error("Vui lòng chọn nhóm muốn ghi chép!");
       return;
     }
 
@@ -99,6 +137,9 @@ export function QuickTransactionModal({
       },
       {
         onSuccess: () => {
+          toast.success("Ghi chép thành công! 🚀");
+          const targetTab = formData.spaceType === "GROUP" ? "GROUP" : "LIST";
+          router.push(`/transactions?tab=${targetTab}`);
           resetForm();
           onClose();
         },
@@ -120,48 +161,65 @@ export function QuickTransactionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-125 rounded-[3rem] border-none p-0 overflow-hidden shadow-2xl bg-background outline-none">
-        {/* TRẠNG THÁI LOADING TOÀN MODAL KHI MỞ LÊN LẦN ĐẦU */}
+      <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none p-0 overflow-hidden shadow-2xl bg-background outline-none font-sans">
         {isInitialLoading ? (
-          <div className="h-125 flex flex-col items-center justify-center gap-4 bg-background">
-            <div className="relative flex items-center justify-center">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <Plus
-                className="absolute text-primary"
-                size={16}
-                strokeWidth={3}
-              />
-            </div>
+          <div className="h-[500px] flex flex-col items-center justify-center gap-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
             <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
-              Đang thiết lập ví tiền...
+              Đang chuẩn bị sổ chép...
             </p>
           </div>
         ) : (
           <>
-            {/* HEADER CUSTOM */}
-            <div className="bg-primary p-8 text-primary-foreground relative shadow-lg">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="absolute right-4 top-4 rounded-full hover:bg-white/20 text-white"
-              >
-                <X size={20} />
-              </Button>
-              <DialogHeader>
-                <DialogTitle className="text-3xl font-black uppercase tracking-tighter flex items-center gap-3 text-white">
-                  <div className="bg-white text-primary rounded-xl p-1.5 shadow-xl shadow-black/10">
-                    <Plus size={24} strokeWidth={4} />
-                  </div>
-                  Ghi chép nhanh
-                </DialogTitle>
-              </DialogHeader>
+            {/* HEADER CAO CẤP + NÚT OCR */}
+            <div className="bg-primary p-8 pb-12 text-primary-foreground relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
+
+              <div className="flex justify-between items-start relative z-10">
+                <DialogHeader>
+                  <DialogTitle className="text-3xl font-black uppercase tracking-tighter flex items-center gap-3 text-white">
+                    <div className="bg-white text-primary rounded-xl p-1.5 shadow-xl">
+                      <Plus size={24} strokeWidth={4} />
+                    </div>
+                    Ghi nhanh
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="relative">
+                  <input
+                    type="file"
+                    className="hidden"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isAnalyzing}
+                    className="bg-white/20 hover:bg-white/30 text-white rounded-2xl gap-2 border border-white/20 shadow-lg backdrop-blur-md h-10 px-4 transition-all active:scale-95"
+                  >
+                    {isAnalyzing ? (
+                      <Loader2 className="animate-spin" size={16} />
+                    ) : (
+                      <ScanLine size={16} />
+                    )}
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      Quét Bill
+                    </span>
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            <form
+              onSubmit={handleSubmit}
+              className="p-8 space-y-6 -mt-8 bg-background rounded-t-[2.5rem] relative z-20"
+            >
+              {/* SỐ TIỀN - FONT MONEY SIÊU BỰ */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
-                  <CreditCard size={12} /> Số tiền giao dịch
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
+                  <CreditCard size={12} /> Giá trị giao dịch
                 </label>
                 <div className="relative group">
                   <Input
@@ -169,36 +227,42 @@ export function QuickTransactionModal({
                     required
                     autoFocus
                     placeholder="0"
-                    className="h-14 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-black text-xl focus:bg-background transition-all pr-16 focus:border-primary/50"
+                    className={cn(
+                      "h-16 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-money text-3xl font-black tracking-tighter focus:bg-background transition-all pr-16 text-primary",
+                      isAnalyzing && "animate-pulse opacity-50",
+                    )}
                     value={formData.amount}
                     onChange={(e) =>
                       setFormData({ ...formData, amount: e.target.value })
                     }
                   />
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-xs text-muted-foreground/50 border-l pl-3 border-border/50">
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-xs opacity-30 border-l pl-3 border-border/50">
                     VNĐ
                   </div>
                 </div>
               </div>
+
               {/* GHI CHÚ */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
-                  <AlignLeft size={12} /> Ghi chú giao dịch
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
+                  <AlignLeft size={12} /> Nội dung ghi chép
                 </label>
                 <div className="relative group">
                   <Input
                     type="text"
                     required
-                    placeholder="Trà sữa, cơm trưa, mua đồ..."
-                    className="h-14 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-bold focus:bg-background transition-all pr-12 focus:border-primary/50"
+                    placeholder="Mua trà sữa, ăn trưa..."
+                    className={cn(
+                      "h-14 px-5 rounded-2xl border-2 border-border/50 bg-muted/20 font-bold focus:bg-background transition-all pr-12",
+                      isAnalyzing && "animate-pulse opacity-50",
+                    )}
                     value={formData.note}
                     onChange={(e) =>
                       setFormData({ ...formData, note: e.target.value })
                     }
                   />
-                  {/* LOADING GỢI Ý */}
-                  {isSuggesting && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {isSuggesting && !isAnalyzing && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
                       <Loader2
                         size={18}
                         className="animate-spin text-primary"
@@ -211,7 +275,7 @@ export function QuickTransactionModal({
               <div className="grid grid-cols-2 gap-4">
                 {/* VÍ */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
                     <Wallet size={12} /> Nguồn tiền
                   </label>
                   <Select
@@ -220,7 +284,7 @@ export function QuickTransactionModal({
                       setFormData({ ...formData, walletId: val })
                     }
                   >
-                    <SelectTrigger className="h-14 rounded-2xl border-2 border-border/50 font-bold hover:bg-muted/10 transition-colors">
+                    <SelectTrigger className="h-14 rounded-2xl border-2 border-border/50 font-bold">
                       <SelectValue placeholder="Chọn ví" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl">
@@ -239,9 +303,9 @@ export function QuickTransactionModal({
 
                 {/* DANH MỤC */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
-                    <Tag size={12} /> Danh mục
-                    {formData.categoryId && !isSuggesting && (
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
+                    <Tag size={12} /> Phân loại
+                    {formData.categoryId && !isSuggesting && !isAnalyzing && (
                       <Sparkles
                         size={12}
                         className="text-yellow-500 animate-pulse"
@@ -257,10 +321,11 @@ export function QuickTransactionModal({
                     <SelectTrigger
                       className={cn(
                         "h-14 rounded-2xl border-2 border-border/50 font-bold transition-all",
-                        isSuggesting && "opacity-40 pointer-events-none",
+                        (isSuggesting || isAnalyzing) &&
+                          "opacity-40 pointer-events-none",
                       )}
                     >
-                      <SelectValue placeholder="Loại chi tiêu" />
+                      <SelectValue placeholder="Loại" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl">
                       {categories?.map((c: any) => (
@@ -280,7 +345,7 @@ export function QuickTransactionModal({
               <div className="grid grid-cols-2 gap-4">
                 {/* KHÔNG GIAN */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
                     <Users size={12} /> Không gian
                   </label>
                   <Select
@@ -303,15 +368,15 @@ export function QuickTransactionModal({
                   </Select>
                 </div>
 
-                {/* CHỌN NHÓM HOẶC NGÀY THÁNG */}
+                {/* CHỌN NHÓM HOẶC NGÀY */}
                 {formData.spaceType === "GROUP" ? (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
                       <Users size={12} />{" "}
                       {isGroupsLoading ? (
                         <Loader2 className="animate-spin" size={10} />
                       ) : (
-                        "Chọn nhóm"
+                        "Nhóm"
                       )}
                     </label>
                     <Select
@@ -337,13 +402,13 @@ export function QuickTransactionModal({
                     </Select>
                   </div>
                 ) : (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1 flex items-center gap-2">
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
                       <Calendar size={12} /> Thời gian
                     </label>
                     <Input
                       type="date"
-                      className="h-14 rounded-2xl border-2 border-border/50 font-bold focus:border-primary/50"
+                      className="h-14 rounded-2xl border-2 border-border/50 bg-muted/10 font-bold focus:border-primary/50"
                       value={formData.date}
                       onChange={(e) =>
                         setFormData({ ...formData, date: e.target.value })
@@ -355,16 +420,18 @@ export function QuickTransactionModal({
 
               <Button
                 type="submit"
-                disabled={createTransaction.isPending || isSuggesting}
-                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-lg shadow-xl shadow-primary/30 transition-all active:scale-[0.98]"
+                disabled={
+                  createTransaction.isPending || isSuggesting || isAnalyzing
+                }
+                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95"
               >
                 {createTransaction.isPending ? (
                   <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={20} />
-                    <span>Đang ghi sổ...</span>
+                    <Loader2 className="animate-spin" size={18} />
+                    <span>ĐANG GHI SỔ...</span>
                   </div>
                 ) : (
-                  "Lưu giao dịch"
+                  "LƯU GIAO DỊCH"
                 )}
               </Button>
             </form>

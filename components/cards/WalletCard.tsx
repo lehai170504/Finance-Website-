@@ -1,8 +1,8 @@
-// components/cards/WalletCard.tsx
 "use client";
 
 import { Wallet } from "@/types/wallet";
 import { Settings2, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface WalletCardProps {
   wallet: Wallet;
@@ -14,53 +14,55 @@ export function WalletCard({ wallet, onEdit, onDelete }: WalletCardProps) {
   return (
     <div
       style={{
-        backgroundColor: wallet.color + "08",
-        borderColor: wallet.color + "30",
+        backgroundColor: wallet.color + "05",
+        borderColor: wallet.color + "25",
       }}
-      className="group p-8 border-2 rounded-[2.5rem] transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 flex flex-col justify-between h-56 relative overflow-hidden"
+      className="group p-7 border-2 rounded-3xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex flex-col justify-between h-60 relative overflow-hidden backdrop-blur-[2px]"
     >
-      {/* Hiệu ứng gradient hắt sáng từ góc */}
       <div
-        className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none transition-opacity group-hover:opacity-40"
+        className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[60px] opacity-10 pointer-events-none transition-all duration-1000 group-hover:opacity-25"
         style={{ backgroundColor: wallet.color }}
       />
 
       <div className="flex justify-between items-start relative z-10">
         <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-black/10"
-          style={{ backgroundColor: wallet.color }}
+          className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-xl"
+          style={{
+            backgroundColor: wallet.color,
+            boxShadow: `0 8px 20px -4px ${wallet.color}60`,
+          }}
         >
           {wallet.name.charAt(0).toUpperCase()}
         </div>
 
-        {/* NHÓM NÚT SỬA & XÓA */}
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-1 group-hover:translate-y-0">
           <button
             onClick={onEdit}
-            className="p-2.5 rounded-xl bg-background/60 backdrop-blur-md hover:bg-background text-muted-foreground hover:text-primary shadow-sm border border-border/50 transition-all hover:scale-110"
+            className="p-2 rounded-xl bg-background/40 backdrop-blur-md hover:bg-background text-muted-foreground hover:text-primary border border-border/40 transition-all active:scale-90"
             title="Cài đặt ví"
           >
-            <Settings2 size={16} />
+            <Settings2 size={15} />
           </button>
           <button
             onClick={onDelete}
-            className="p-2.5 rounded-xl bg-background/60 backdrop-blur-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive shadow-sm border border-border/50 transition-all hover:scale-110"
+            className="p-2 rounded-xl bg-background/40 backdrop-blur-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive border border-border/40 transition-all active:scale-90"
             title="Xóa ví"
           >
-            <Trash2 size={16} />
+            <Trash2 size={15} />
           </button>
         </div>
       </div>
 
       <div className="relative z-10">
-        <h3 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 mb-1 ml-1">
           {wallet.name}
         </h3>
         <p
-          className="text-3xl font-black tracking-tighter drop-shadow-sm"
+          className="text-3xl font-black tracking-tighter font-money flex items-baseline gap-1"
           style={{ color: wallet.color }}
         >
-          {wallet.balance.toLocaleString()}đ
+          {wallet.balance.toLocaleString()}
+          <span className="text-xs font-black opacity-60">đ</span>
         </p>
       </div>
     </div>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { GroupCard } from "@/components/cards/GroupCard";
-import { Plus, UserPlus, Users } from "lucide-react";
+import { Plus, UserPlus, Users, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function GroupsPage() {
@@ -25,7 +25,6 @@ export default function GroupsPage() {
     isOwner: boolean;
   } | null>(null);
 
-  // 1. Xử lý Tạo hoặc Tham gia nhóm
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
@@ -36,7 +35,6 @@ export default function GroupsPage() {
     }
   };
 
-  // 2. Mở Modal xác nhận (Rời nhóm hoặc Xóa nhóm)
   const handleActionClick = (
     e: React.MouseEvent,
     id: string,
@@ -48,7 +46,6 @@ export default function GroupsPage() {
     setConfirmOpen(true);
   };
 
-  // 3. Thực thi hành động sau khi xác nhận Modal
   const handleConfirmAction = () => {
     if (!selectedGroup) return;
     const mutation = selectedGroup.isOwner ? deleteGroup : leaveGroup;
@@ -57,104 +54,138 @@ export default function GroupsPage() {
     });
   };
 
-  // 4. Điều hướng sang trang Nhật ký nhóm (Activity Logs)
   const handleViewLogs = (groupId: string) => {
     router.push(`/groups/${groupId}/logs`);
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 mt-4 space-y-12">
-      {/* HEADER SECTION: Tiêu đề và Form nhập liệu */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-border/50">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 mt-6 space-y-16 font-sans">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10 pb-12 border-b border-border/40">
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-primary">
+              <Sparkles size={18} strokeWidth={2.5} />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                Cùng nhau quản lý
+              </span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight uppercase leading-none text-foreground">
               Không Gian Chung
             </h1>
-            <p className="text-muted-foreground font-medium text-lg">
-              Kết nối tài chính, minh bạch chi tiêu cùng đồng đội.
+            <p className="text-muted-foreground font-medium text-lg md:text-xl max-w-2xl">
+              Nơi minh bạch tài chính, gạt bỏ lo âu về những khoản chi tiêu
+              chung cùng đồng đội.
             </p>
           </div>
 
-          {/* Switch Chế độ Create/Join */}
-          <div className="flex p-1 bg-muted/50 rounded-2xl w-fit border border-border/50">
+          {/* Switch Chế độ Create/Join kiểu Tab hiện đại */}
+          <div className="flex p-1.5 bg-muted/40 backdrop-blur-sm rounded-[1.25rem] w-fit border border-border/40 shadow-inner">
             <button
-              onClick={() => setMode("CREATE")}
+              onClick={() => {
+                setMode("CREATE");
+                setInputValue("");
+              }}
               className={cn(
-                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all",
+                "flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
                 mode === "CREATE"
-                  ? "bg-background shadow-md text-primary"
-                  : "text-muted-foreground",
+                  ? "bg-background shadow-xl text-primary scale-100 border border-border/50"
+                  : "text-muted-foreground hover:text-foreground/80 scale-95",
               )}
             >
-              <Plus size={16} /> Tạo nhóm mới
+              <Plus size={16} strokeWidth={3} /> Tạo nhóm mới
             </button>
             <button
-              onClick={() => setMode("JOIN")}
+              onClick={() => {
+                setMode("JOIN");
+                setInputValue("");
+              }}
               className={cn(
-                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all",
+                "flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
                 mode === "JOIN"
-                  ? "bg-background shadow-md text-primary"
-                  : "text-muted-foreground",
+                  ? "bg-background shadow-xl text-primary scale-100 border border-border/50"
+                  : "text-muted-foreground hover:text-foreground/80 scale-95",
               )}
             >
-              <UserPlus size={16} /> Tham gia nhóm
+              <UserPlus size={16} strokeWidth={3} /> Tham gia nhóm
             </button>
           </div>
         </div>
 
+        {/* Form nhập liệu uý tín */}
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-[450px]"
+          className="flex flex-col sm:flex-row items-stretch gap-3 w-full xl:w-[500px] animate-in slide-in-from-right-4 duration-700"
         >
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder={
-              mode === "CREATE" ? "TÊN NHÓM MỚI..." : "MÃ MỜI 6 CHỮ SỐ..."
-            }
-            className="h-12 font-bold uppercase"
-          />
+          <div className="relative flex-1 group">
+            <Input
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder={
+                mode === "CREATE"
+                  ? "NHẬP TÊN NHÓM..."
+                  : "NHẬP MÃ MỜI 6 KÝ TỰ..."
+              }
+              className="h-16 px-6 rounded-2xl border-2 border-border/60 bg-muted/20 font-bold uppercase focus:bg-background transition-all text-sm tracking-widest placeholder:opacity-30"
+            />
+          </div>
           <Button
             type="submit"
+            size="lg"
             disabled={isLoading || !inputValue.trim()}
-            className="w-full sm:w-auto h-12 px-8 font-black uppercase text-[11px]"
+            className="h-16 px-10 rounded-2xl font-black uppercase tracking-[0.2em] text-[12px] shadow-2xl shadow-primary/30"
           >
-            XÁC NHẬN
+            {createGroup.isPending || joinGroup.isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "XÁC NHẬN"
+            )}
           </Button>
         </form>
       </div>
 
       {/* CONTENT AREA: Danh sách nhóm */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-4 animate-pulse">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-primary">
-            Đang truy xuất danh sách nhóm...
-          </span>
-        </div>
-      ) : groups.length === 0 ? (
-        <div className="text-center py-40 border-4 border-dashed rounded-[3.5rem] border-muted/30">
-          <Users size={48} className="mx-auto text-muted-foreground mb-4" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">
-            Chưa có nhóm nào ở đây cả homie. Hãy tạo một nhóm ngay!
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {groups.map((group) => (
-            <GroupCard
-              key={group.id}
-              group={group}
-              userEmail={user?.email}
-              onAction={handleActionClick}
-              onViewLogs={() => handleViewLogs(group.id)}
-            />
-          ))}
-        </div>
-      )}
+      <div className="min-h-[400px]">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-40 gap-6">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Users size={20} className="text-primary animate-pulse" />
+              </div>
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary/70">
+              Đang kết nối không gian...
+            </span>
+          </div>
+        ) : groups.length === 0 ? (
+          <div className="text-center py-40 border-2 border-dashed rounded-[3rem] border-border/60 bg-muted/[0.02] backdrop-blur-[2px] animate-in zoom-in duration-500">
+            <div className="w-24 h-24 bg-muted/40 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Users size={40} className="text-muted-foreground/30" />
+            </div>
+            <p className="text-base font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-2">
+              Chưa có không gian nào
+            </p>
+            <p className="text-[11px] font-bold text-muted-foreground/40 uppercase">
+              Hãy tạo nhóm hoặc nhập mã mời để bắt đầu
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            {groups.map((group) => (
+              <GroupCard
+                key={group.id}
+                group={group}
+                userEmail={user?.email}
+                onAction={handleActionClick}
+                onViewLogs={() => handleViewLogs(group.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* MODAL XÁC NHẬN HÀNH ĐỘNG NGUY HIỂM */}
+      {/* MODAL XÁC NHẬN */}
       <ConfirmModal
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
@@ -162,8 +193,8 @@ export default function GroupsPage() {
         title={selectedGroup?.isOwner ? "Xóa nhóm vĩnh viễn" : "Rời khỏi nhóm"}
         description={
           selectedGroup?.isOwner
-            ? "Cảnh báo: Mọi dữ liệu giao dịch và nợ nần trong nhóm sẽ bị xóa sạch khỏi hệ thống. Bạn có chắc chắn không?"
-            : "Bạn sẽ không thể xem lại lịch sử chi tiêu chung của nhóm này sau khi rời đi."
+            ? "Cảnh báo: Mọi dữ liệu giao dịch và nợ nần trong nhóm sẽ bị xóa sạch khỏi hệ thống. Hành động này không thể khôi phục."
+            : "Bạn sẽ không thể tiếp tục theo dõi lịch sử thu chi chung của nhóm này sau khi rời đi."
         }
         confirmText={selectedGroup?.isOwner ? "XÓA NHÓM" : "RỜI NHÓM"}
         isLoading={deleteGroup.isPending || leaveGroup.isPending}

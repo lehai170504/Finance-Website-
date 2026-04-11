@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -35,27 +35,27 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="rounded-[2.5rem] border-none p-6 sm:p-8 max-w-md bg-background/95 backdrop-blur-xl shadow-2xl outline-none">
-        <AlertDialogHeader className="flex flex-col items-center text-center sm:text-left sm:items-start sm:flex-row gap-4 sm:gap-5">
-          {/* CỤC ICON CẢNH BÁO */}
-          <div className="p-3.5 bg-destructive/10 text-destructive rounded-2xl shrink-0 shadow-inner">
+      <AlertDialogContent className="rounded-[2rem] border-none p-8 max-w-md bg-background/95 backdrop-blur-2xl shadow-2xl outline-none font-sans">
+        <AlertDialogHeader className="flex flex-col items-center text-center sm:text-left sm:items-start sm:flex-row gap-5">
+          {/* ICON CẢNH BÁO CAO CẤP */}
+          <div className="p-4 bg-destructive/10 text-destructive rounded-2xl shrink-0 shadow-inner flex items-center justify-center border border-destructive/10 animate-pulse">
             <AlertTriangle size={28} strokeWidth={2.5} />
           </div>
 
-          <div className="space-y-2 flex-1">
-            <AlertDialogTitle className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-foreground">
+          <div className="space-y-2 flex-1 pt-1">
+            <AlertDialogTitle className="text-2xl font-black uppercase tracking-tighter text-foreground leading-none">
               {title}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[13px] sm:text-sm font-medium text-muted-foreground leading-relaxed">
+            <AlertDialogDescription className="text-sm font-medium text-muted-foreground/80 leading-relaxed">
               {description}
             </AlertDialogDescription>
           </div>
         </AlertDialogHeader>
 
-        <AlertDialogFooter className="mt-8 flex flex-col-reverse sm:flex-row gap-3 sm:gap-2">
+        <AlertDialogFooter className="mt-10 flex flex-col-reverse sm:flex-row gap-3">
           <AlertDialogCancel
             disabled={isLoading}
-            className="mt-0 sm:mt-0 w-full sm:w-auto rounded-2xl font-bold uppercase tracking-widest text-[11px] h-12 px-6 border-2 border-border/50 hover:bg-muted/50 transition-colors"
+            className="mt-0 w-full sm:w-auto rounded-xl font-bold uppercase tracking-widest text-[10px] h-12 px-6 border-2 border-border/50 hover:bg-muted transition-all active:scale-95"
           >
             {cancelText}
           </AlertDialogCancel>
@@ -65,9 +65,16 @@ export function ConfirmModal({
               onConfirm();
             }}
             disabled={isLoading}
-            className="w-full sm:w-auto rounded-2xl font-black uppercase tracking-widest text-[11px] h-12 px-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all duration-300 shadow-xl shadow-destructive/20 hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto rounded-xl font-black uppercase tracking-widest text-[10px] h-12 px-8 bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all duration-300 shadow-xl shadow-destructive/20 hover:scale-105 active:scale-95 flex items-center gap-2"
           >
-            {isLoading ? "ĐANG XỬ LÝ..." : confirmText}
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={14} />
+                <span>ĐANG XỬ LÝ</span>
+              </>
+            ) : (
+              confirmText
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -54,9 +54,7 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
               >
-                <main className="flex-1 w-full responsive-container py-6 md:py-10">
-                  {children}
-                </main>
+                <main>{children}</main>
                 <Toaster position="top-right" richColors closeButton />
               </ThemeProvider>
             </AuthSyncProvider>

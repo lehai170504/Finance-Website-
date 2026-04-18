@@ -15,7 +15,9 @@ export const groupService = {
   },
 
   getGroupById: async (groupId: string) => {
-    const response = await axiosInstance.get(`/groups/${groupId}`);
+    const response = await axiosInstance.get<ApiResponse<Group>>(
+      `/groups/${groupId}`,
+    );
     return response.data;
   },
 

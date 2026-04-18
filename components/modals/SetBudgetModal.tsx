@@ -19,6 +19,7 @@ import {
 import { useReports } from "@/hooks/useReports";
 import { Tag, CalendarDays, Coins, Target, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCategories } from "@/hooks/useCategories";
 
 export function SetBudgetModal({
   isOpen,
@@ -27,7 +28,8 @@ export function SetBudgetModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const { categories, setBudget } = useReports();
+  const { categories } = useCategories();
+  const { setBudget } = useReports();
   const [categoryId, setCategoryId] = useState("");
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());

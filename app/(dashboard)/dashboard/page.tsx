@@ -20,6 +20,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SavingsGoalsCard } from "@/components/dashboard/SavingsGoalsCard";
+import { CashFlowChart } from "@/components/dashboard/CashFlowChart";
 
 const CHART_COLORS = [
   "#0088ff",
@@ -221,137 +223,146 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* CHART SECTION - FIX LOGIC RENDER BIỂU ĐỒ */}
-      <div className="p-8 md:p-12 border-2 border-border/40 rounded-[3rem] bg-card shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-border/40 pb-6 relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 bg-primary/10 rounded-2xl text-primary border border-primary/20">
-              <PieChart size={24} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black uppercase tracking-tight">
-                Cơ cấu tài chính
-              </h2>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
-                Phân tích danh mục tháng này
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/reports"
-            className="text-[11px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-2 group border-2 border-primary/10 px-5 py-2.5 rounded-full hover:bg-primary hover:text-white transition-all"
-          >
-            Báo cáo chi tiết{" "}
-            <ArrowRight
-              size={14}
-              strokeWidth={3}
-              className="group-hover:translate-x-1.5 transition-transform"
-            />
-          </Link>
-        </div>
-
-        {isLoadingStats ? (
-          <div className="py-32 text-center flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-              Đang tổng hợp dữ liệu...
-            </span>
-          </div>
-        ) : expenseStats.length === 0 ? (
-          <div className="py-24 text-center border-4 border-dashed rounded-[2.5rem] border-muted/20 bg-muted/5 flex flex-col items-center gap-4">
-            <TrendingUp
-              size={48}
-              className="text-muted-foreground/20"
-              strokeWidth={1.5}
-            />
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic px-6 text-center leading-relaxed">
-              "Sạch bóng quân thù" - Tháng này homie chưa có dữ liệu chi tiêu.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col lg:flex-row items-center gap-16 justify-center relative z-10 px-4">
-            {/* SVG DONUT CHART - TỐI ƯU STROKE & ANIMATION */}
-            <div className="relative w-64 h-64 md:w-72 md:h-72 shrink-0 drop-shadow-2xl">
-              <svg
-                viewBox="0 0 100 100"
-                className="w-full h-full transform -rotate-90"
-              >
-                {expenseStats.map((item: any, index: number) => {
-                  const percent = (item.totalAmount / totalExpense) * 100;
-                  const dashArray = `${(percent * circumference) / 100} ${circumference}`;
-                  const dashOffset = -(
-                    (cumulativePercent * circumference) /
-                    100
-                  );
-                  cumulativePercent += percent; // Cập nhật cho vòng lặp kế tiếp
-                  const color = CHART_COLORS[index % CHART_COLORS.length];
-
-                  return (
-                    <circle
-                      key={index}
-                      cx="50"
-                      cy="50"
-                      r={radius}
-                      fill="transparent"
-                      stroke={color}
-                      strokeWidth="14"
-                      strokeDasharray={dashArray}
-                      strokeDashoffset={dashOffset}
-                      strokeLinecap={percent > 2 ? "round" : "butt"} // Bo góc nếu phần trăm đủ lớn
-                      className="transition-all duration-700 ease-out hover:stroke-width-[18] cursor-pointer"
-                    />
-                  );
-                })}
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-background/5 rounded-full backdrop-blur-[2px]">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                  Tổng chi
-                </span>
-                <span className="text-3xl font-black tracking-tighter text-destructive mt-1 font-money">
-                  {totalExpense >= 1000000
-                    ? `${(totalExpense / 1000000).toFixed(1)}M`
-                    : `${(totalExpense / 1000).toFixed(0)}K`}
-                </span>
+      {/* CHART & GOALS SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* CHART SECTION */}
+        <div className="lg:col-span-2 p-8 md:p-12 border-2 border-border/40 rounded-[3rem] bg-card shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-border/40 pb-6 relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 bg-primary/10 rounded-2xl text-primary border border-primary/20">
+                <PieChart size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tight">
+                  Cơ cấu tài chính
+                </h2>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
+                  Phân tích danh mục tháng này
+                </p>
               </div>
             </div>
-
-            {/* LIST CHÚ THÍCH - GIỮ NGUYÊN */}
-            <div className="flex-1 w-full max-w-md space-y-4">
-              {expenseStats.map((item: any, index: number) => {
-                const color = CHART_COLORS[index % CHART_COLORS.length];
-                const percent = (
-                  (item.totalAmount / totalExpense) *
-                  100
-                ).toFixed(1);
-                return (
-                  <div
-                    key={index}
-                    className="group flex items-center justify-between p-4 border border-border/40 rounded-2xl bg-muted/10 hover:bg-muted/30 transition-all hover:scale-[1.02] cursor-default shadow-sm"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className="w-4 h-4 rounded-lg shadow-sm transition-transform group-hover:scale-125"
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="text-sm font-black uppercase tracking-tight text-foreground/80">
-                        {item.categoryName}
-                      </span>
-                    </div>
-                    <div className="text-right flex flex-col leading-none">
-                      <span className="text-base font-black font-money">
-                        {item.totalAmount.toLocaleString()}đ
-                      </span>
-                      <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest mt-1.5">
-                        {percent}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <Link
+              href="/reports"
+              className="text-[11px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-2 group border-2 border-primary/10 px-5 py-2.5 rounded-full hover:bg-primary hover:text-white transition-all"
+            >
+              Báo cáo chi tiết{" "}
+              <ArrowRight
+                size={14}
+                strokeWidth={3}
+                className="group-hover:translate-x-1.5 transition-transform"
+              />
+            </Link>
           </div>
-        )}
+
+          {isLoadingStats ? (
+            <div className="py-32 text-center flex flex-col items-center gap-4">
+              <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                Đang tổng hợp dữ liệu...
+              </span>
+            </div>
+          ) : expenseStats.length === 0 ? (
+            <div className="py-24 text-center border-4 border-dashed rounded-[2.5rem] border-muted/20 bg-muted/5 flex flex-col items-center gap-4">
+              <TrendingUp
+                size={48}
+                className="text-muted-foreground/20"
+                strokeWidth={1.5}
+              />
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 italic px-6 text-center leading-relaxed">
+                "Sạch bóng quân thù" - Tháng này homie chưa có dữ liệu chi tiêu.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col xl:flex-row items-center gap-10 justify-center relative z-10 px-4">
+              {/* SVG DONUT CHART */}
+              <div className="relative w-56 h-56 md:w-64 md:h-64 shrink-0 drop-shadow-2xl">
+                <svg
+                  viewBox="0 0 100 100"
+                  className="w-full h-full transform -rotate-90"
+                >
+                  {expenseStats.map((item: any, index: number) => {
+                    const percent = (item.totalAmount / totalExpense) * 100;
+                    const dashArray = `${(percent * circumference) / 100} ${circumference}`;
+                    const dashOffset = -(
+                      (cumulativePercent * circumference) /
+                      100
+                    );
+                    cumulativePercent += percent;
+                    const color = CHART_COLORS[index % CHART_COLORS.length];
+
+                    return (
+                      <circle
+                        key={index}
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        fill="transparent"
+                        stroke={color}
+                        strokeWidth="14"
+                        strokeDasharray={dashArray}
+                        strokeDashoffset={dashOffset}
+                        strokeLinecap={percent > 2 ? "round" : "butt"}
+                        className="transition-all duration-700 ease-out hover:stroke-width-[18] cursor-pointer"
+                      />
+                    );
+                  })}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-background/5 rounded-full backdrop-blur-[2px]">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                    Tổng chi
+                  </span>
+                  <span className="text-2xl font-black tracking-tighter text-destructive mt-1 font-money">
+                    {totalExpense >= 1000000
+                      ? `${(totalExpense / 1000000).toFixed(1)}M`
+                      : `${(totalExpense / 1000).toFixed(0)}K`}
+                  </span>
+                </div>
+              </div>
+
+                {/* LIST CHÚ THÍCH */}
+              <div className="flex-1 w-full space-y-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20">
+                {expenseStats.map((item: any, index: number) => {
+                  const color = CHART_COLORS[index % CHART_COLORS.length];
+                  const percent = (
+                    (item.totalAmount / totalExpense) *
+                    100
+                  ).toFixed(1);
+                  return (
+                    <div
+                      key={index}
+                      className="group flex items-center justify-between p-3 border border-border/40 rounded-2xl bg-muted/10 hover:bg-muted/30 transition-all hover:scale-[1.02] cursor-default shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-3 h-3 rounded-lg shadow-sm transition-transform group-hover:scale-125"
+                          style={{ backgroundColor: color }}
+                        />
+                        <span className="text-[11px] font-black uppercase tracking-tight text-foreground/80">
+                          {item.categoryName}
+                        </span>
+                      </div>
+                      <div className="text-right flex flex-col leading-none">
+                        <span className="text-sm font-black font-money">
+                          {item.totalAmount.toLocaleString()}đ
+                        </span>
+                        <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest mt-1">
+                          {percent}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SAVINGS GOALS SECTION */}
+        <SavingsGoalsCard />
       </div>
+
+      {/* CASH FLOW CHART SECTION */}
+      <CashFlowChart />
 
       <Button
         onClick={() => setIsQuickCreateOpen(true)}
@@ -360,7 +371,7 @@ export default function DashboardPage() {
         <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
         <Plus size={32} strokeWidth={3} className="relative z-10" />
         <span className="absolute right-20 bg-foreground text-background text-[11px] font-black px-5 py-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0 whitespace-nowrap pointer-events-none uppercase tracking-widest shadow-2xl border border-border/20 backdrop-blur-xl">
-          Ghi chép siêu tốc 🚀
+          Ghi chép siêu tốc
         </span>
       </Button>
 

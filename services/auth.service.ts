@@ -72,9 +72,9 @@ export const authService = {
   },
 
   sendOtp: async (email: string) => {
-    const response = await axiosInstance.post<ApiResponse<null>>(
-      `/auth/forgot-password?email=${email}`,
-    );
+    const response = await axiosInstance.post("/auth/forgot-password", null, {
+      params: { email },
+    });
     return response.data;
   },
 

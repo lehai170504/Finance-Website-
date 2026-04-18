@@ -122,7 +122,7 @@ export const transactionService = {
         params: {
           walletId,
           categoryId,
-          groupId: groupId || "",
+          groupId: groupId || undefined,
         },
       },
     );
@@ -149,9 +149,9 @@ export const transactionService = {
   suggestCategory: async (note: string) => {
     const response = await axiosInstance.get<ApiResponse<string>>(
       `/transactions/suggest-category`,
-      { params: { note } }
+      { params: { note } },
     );
-    return response.data; 
+    return response.data;
   },
 
   analyzeReceipt: async (file: File) => {
@@ -163,7 +163,7 @@ export const transactionService = {
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
-      }
+      },
     );
     return response.data;
   },

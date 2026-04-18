@@ -2,18 +2,18 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { reportService } from "@/services/report.service";
 import { toast } from "sonner";
 
-export const useReports = (startDate?: string, endDate?: string) => {
-  // Hook lấy danh mục
-  const categoriesQuery = useQuery({
-    queryKey: ["categories"],
-    queryFn: reportService.getCategories,
-  });
-
+export const useReports = (startDate?: string, endDate?: string, days: number = 30) => {
   // Hook thống kê
   const statsQuery = useQuery({
     queryKey: ["category_stats", startDate, endDate],
     queryFn: () => reportService.getCategoryStats(startDate!, endDate!),
-    enabled: !!startDate && !!endDate, // Chỉ chạy khi có đủ ngày
+    enabled: !!startDate && !!endDate,
+  });
+
+  // Hook thống kê Cash Flow
+  const cashFlowQuery = useQuery({
+    queryKey: ["cash_flow", days],
+    queryFn: () => reportService.getCashFlowStatistics(days),
   });
 
   // Hook set ngân sách
@@ -26,9 +26,10 @@ export const useReports = (startDate?: string, endDate?: string) => {
   });
 
   return {
-    categories: categoriesQuery.data?.data || [],
     stats: statsQuery.data?.data || [],
     isLoadingStats: statsQuery.isLoading,
+    cashFlow: cashFlowQuery.data?.data || [],
+    isLoadingCashFlow: cashFlowQuery.isLoading,
     downloadExcel: reportService.downloadExcel,
     setBudget: setBudgetMutation,
   };

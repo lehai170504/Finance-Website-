@@ -52,6 +52,11 @@ axiosInstance.interceptors.response.use(
           error.response.data?.message || "Đã có lỗi xảy ra!";
         toast.error(errorMessage);
       }
+
+      // Xử lý Rate Limit (Lỗi 429)
+      if (error.response.status === 429 && isBrowser) {
+        toast.error("Homie ơi, bạn thao tác quá nhanh! Hãy thử lại sau vài phút nhé.");
+      }
     }
     return Promise.reject(error);
   },

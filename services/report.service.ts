@@ -1,12 +1,14 @@
 import { axiosInstance } from "@/lib/axios";
 import { ApiResponse } from "@/types/auth";
-import { Category } from "@/types/category";
+import { CashFlowResponse } from "@/types/report";
 
 export const reportService = {
-  // 1. Lấy danh sách Categories
-  getCategories: async () => {
-    const response =
-      await axiosInstance.get<ApiResponse<Category[]>>("/categories");
+  // 1. Thống kê Cash Flow (Dòng tiền theo thời gian)
+  getCashFlowStatistics: async (days: number = 30) => {
+    const response = await axiosInstance.get<ApiResponse<CashFlowResponse[]>>(
+      "/reports/cash-flow",
+      { params: { days } }
+    );
     return response.data;
   },
 
@@ -22,7 +24,7 @@ export const reportService = {
   // 3. Tải Excel
   downloadExcel: async () => {
     const response = await axiosInstance.get("/reports/download-excel", {
-      responseType: "blob", // BẮT BUỘC ĐỂ TẢI FILE
+      responseType: "blob",
     });
 
     // Logic tải file tự động trình duyệt

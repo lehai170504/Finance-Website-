@@ -1,4 +1,5 @@
 import { Header } from "@/components/layouts/Header";
+import { AiChatBot } from "@/components/dashboard/AiChatBot";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
       <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto">
         {children}
       </main>
+      <AiChatBot />
     </>
   );
 }

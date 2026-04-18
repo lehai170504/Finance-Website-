@@ -22,6 +22,8 @@ import {
 import { cn } from "@/lib/utils";
 import { SavingsGoalsCard } from "@/components/dashboard/SavingsGoalsCard";
 import { CashFlowChart } from "@/components/dashboard/CashFlowChart";
+import { AiAdvisorCard } from "@/components/dashboard/AiAdvisorCard";
+import { useTransactions } from "@/hooks/useTransactions";
 
 const CHART_COLORS = [
   "#0088ff",
@@ -361,12 +363,14 @@ export default function DashboardPage() {
         <SavingsGoalsCard />
       </div>
 
-      {/* CASH FLOW CHART SECTION */}
-      <CashFlowChart />
+      {/* DÒNG TIỀN SECTION */}
+      <div className="lg:col-span-3">
+        <CashFlowChart />
+      </div>
 
       <Button
         onClick={() => setIsQuickCreateOpen(true)}
-        className="fixed bottom-10 right-10 w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/50 hover:scale-110 hover:-rotate-6 active:scale-95 transition-all duration-500 z-50 group overflow-hidden"
+        className="fixed bottom-8 right-32 w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/50 hover:scale-110 hover:-rotate-6 active:scale-95 transition-all duration-500 z-50 group overflow-hidden"
       >
         <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
         <Plus size={32} strokeWidth={3} className="relative z-10" />

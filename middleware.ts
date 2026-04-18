@@ -4,33 +4,41 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
+  const isWaiting2FA = request.cookies.get("temp_2fa_valid")?.value;
   const { pathname } = request.nextUrl;
 
-  // 1. Nếu CHƯA LOGIN mà đòi vào các trang nội bộ (dashboard, groups, wallets,...)
   const isProtectedRoute =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/groups") ||
     pathname.startsWith("/wallets") ||
     pathname.startsWith("/transactions") ||
-    pathname.startsWith("/profile");
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/reports");
 
-  if (isProtectedRoute && !token) {
-    // Đá về trang login ngay lập tức
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // 2. Nếu ĐÃ LOGIN rồi mà đòi quay lại trang login/register
   const isAuthRoute = pathname === "/login" || pathname === "/register";
 
-  if (isAuthRoute && token) {
-    // Đẩy thẳng vào dashboard, không cho quay lại
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (token) {
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (isWaiting2FA) {
+    if (pathname === "/login") return NextResponse.next();
+
+    if (isProtectedRoute) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
+  if (isProtectedRoute && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
 }
 
-// Chỉ định middleware chạy cho các route nào
 export const config = {
   matcher: [
     "/dashboard/:path*",
@@ -38,6 +46,7 @@ export const config = {
     "/wallets/:path*",
     "/transactions/:path*",
     "/profile/:path*",
+    "/reports/:path*",
     "/login",
     "/register",
   ],

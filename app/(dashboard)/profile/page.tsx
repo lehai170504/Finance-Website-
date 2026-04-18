@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { PasswordForm } from "@/components/profile/PasswordForm";
+import { TwoFactorForm } from "@/components/profile/TwoFactorForm";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -77,34 +78,44 @@ export default function ProfilePage() {
 
       {/* TABS CONTAINER */}
       <Tabs defaultValue="info" className="w-full">
-        {/* TABS LIST: PREMIUM PILL DESIGN */}
-        <TabsList className="grid w-full grid-cols-2 mb-12 h-16 rounded-full bg-muted/30 p-1.5 border border-border/40 backdrop-blur-md shadow-2xl shadow-black/5 relative">
+        <TabsList className="grid w-full grid-cols-3 mb-12 h-16 rounded-full bg-muted/30 p-1 border border-border/40 backdrop-blur-md shadow-2xl shadow-black/5 relative overflow-hidden">
           <TabsTrigger
             value="info"
             className={cn(
-              "rounded-full uppercase tracking-[0.2em] font-black text-[10px] h-full transition-all duration-500 z-10",
+              "rounded-full uppercase tracking-[0.1em] font-black text-[9px] md:text-[10px] h-full transition-all duration-500 z-10",
               "data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xl border border-transparent data-[state=active]:border-border/50",
               "data-[state=inactive]:text-muted-foreground/60 data-[state=inactive]:hover:text-foreground data-[state=active]:scale-[0.97]",
             )}
           >
-            Hồ sơ cá nhân
+            Hồ sơ
           </TabsTrigger>
 
           <TabsTrigger
             value="security"
             className={cn(
-              "rounded-full uppercase tracking-[0.2em] font-black text-[10px] h-full transition-all duration-500 z-10",
+              "rounded-full uppercase tracking-[0.1em] font-black text-[9px] md:text-[10px] h-full transition-all duration-500 z-10",
               "data-[state=active]:bg-background data-[state=active]:text-destructive data-[state=active]:shadow-xl border border-transparent data-[state=active]:border-border/50",
               "data-[state=inactive]:text-muted-foreground/60 data-[state=inactive]:hover:text-foreground data-[state=active]:scale-[0.97]",
             )}
           >
-            Bảo mật & Mật khẩu
+            Mật khẩu
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="2fa"
+            className={cn(
+              "rounded-full uppercase tracking-[0.1em] font-black text-[9px] md:text-[10px] h-full transition-all duration-500 z-10",
+              "data-[state=active]:bg-background data-[state=active]:text-emerald-500 data-[state=active]:shadow-xl border border-transparent data-[state=active]:border-border/50",
+              "data-[state=inactive]:text-muted-foreground/60 data-[state=inactive]:hover:text-foreground data-[state=active]:scale-[0.97]",
+            )}
+          >
+            Bảo mật 2FA
           </TabsTrigger>
         </TabsList>
 
         {/* MAIN CONTENT CARD */}
-        <div className="bg-card/40 backdrop-blur-2xl p-8 md:p-14 rounded-[3.5rem] border-2 border-border/40 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] relative overflow-hidden group">
-          {/* Decorative Elements (Ánh sáng ambient động) */}
+        <div className="bg-card/40 backdrop-blur-2xl p-6 md:p-14 rounded-[3.5rem] border-2 border-border/40 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] relative overflow-hidden group">
+          {/* Decorative Elements */}
           <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none group-hover:bg-primary/20 transition-all duration-1000" />
           <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -117,14 +128,14 @@ export default function ProfilePage() {
               <ProfileForm user={user} updateMutation={updateMutation} />
             </TabsContent>
 
-            {/* CONTENT: BẢO MẬT */}
+            {/* CONTENT: MẬT KHẨU */}
             <TabsContent
               value="security"
               className="mt-0 outline-none focus-visible:ring-0 animate-in fade-in slide-in-from-left-4 duration-500"
             >
-              {/* Security Alert Banner - Refined */}
+              {/* Security Alert Banner */}
               <div className="mb-10 p-5 bg-destructive/[0.03] rounded-2xl border border-destructive/10 flex items-start gap-4 transition-all hover:bg-destructive/[0.06] group/alert">
-                <div className="p-2.5 bg-destructive text-white rounded-xl shadow-lg shadow-destructive/20 shrink-0 group-hover/alert:scale-110 transition-transform">
+                <div className="p-2.5 bg-destructive text-blue-500 rounded-xl shadow-lg shadow-destructive/20 shrink-0 group-hover/alert:scale-110 transition-transform">
                   <ShieldAlert size={20} strokeWidth={2.5} />
                 </div>
                 <div className="space-y-1">
@@ -140,6 +151,13 @@ export default function ProfilePage() {
               </div>
 
               <PasswordForm passwordMutation={passwordMutation} />
+            </TabsContent>
+
+            <TabsContent
+              value="2fa"
+              className="mt-0 outline-none focus-visible:ring-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              <TwoFactorForm user={user} />
             </TabsContent>
           </div>
         </div>

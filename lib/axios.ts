@@ -35,39 +35,24 @@ axiosInstance.interceptors.request.use(
 
 // XỬ LÝ RESPONSE: Bắt lỗi và Thông báo toàn cục
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     const isBrowser = typeof window !== "undefined";
 
     if (error.response) {
-      const errorMessage =
-        error.response.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại!";
+      const isAuthApi = error.config.url?.includes("/auth/");
 
-      if (error.response.status === 401) {
-        if (isBrowser) {
-          toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!");
-          Cookies.remove("access_token");
-          Cookies.remove("refresh_token");
-
-          setTimeout(() => {
-            window.location.href = "/login";
-          }, 1500);
-        }
-      } else {
-        if (isBrowser) {
-          toast.error(errorMessage);
-        }
+      if (error.response.status === 401 && isBrowser && !isAuthApi) {
+        toast.error("Phiên đăng nhập hết hạn!");
+        Cookies.remove("access_token");
+        window.location.href = "/login";
       }
-    } else {
-      if (isBrowser) {
-        toast.error(
-          "Không thể kết nối đến máy chủ! Kiểm tra lại đường truyền.",
-        );
+      if (!isAuthApi && isBrowser) {
+        const errorMessage =
+          error.response.data?.message || "Đã có lỗi xảy ra!";
+        toast.error(errorMessage);
       }
     }
-
     return Promise.reject(error);
   },
 );

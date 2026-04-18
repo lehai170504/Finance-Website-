@@ -95,7 +95,7 @@ export function TransactionCard({
 
           <div className="flex flex-col gap-1 flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="font-black tracking-tight text-foreground text-sm sm:text-base leading-none truncate max-w-[140px] sm:max-w-xs uppercase">
+              <h4 className="font-black tracking-tight text-foreground text-sm sm:text-base leading-none truncate max-w-[140px] sm:max-w-xs uppercase p-2">
                 {trans.note || trans.categoryName}
               </h4>
 

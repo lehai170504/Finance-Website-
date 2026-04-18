@@ -7,6 +7,7 @@ import {
   AuthResponse,
   UserProfile,
   ChangePasswordPayload,
+  Verify2FaPayload,
 } from "@/types/auth";
 
 export const authService = {
@@ -62,12 +63,9 @@ export const authService = {
   changePassword: async (payload: ChangePasswordPayload) => {
     const response = await axiosInstance.post<ApiResponse<null>>(
       "/auth/change-password",
-      null,
       {
-        params: {
-          oldPass: payload.oldPassword,
-          newPass: payload.newPassword,
-        },
+        oldPass: payload.oldPassword,
+        newPass: payload.newPassword,
       },
     );
     return response.data;
@@ -86,6 +84,52 @@ export const authService = {
       null,
       {
         params: { email, otp, newPassword },
+      },
+    );
+    return response.data;
+  },
+
+  verify2FA: async (payload: Verify2FaPayload) => {
+    const response = await axiosInstance.post<ApiResponse<AuthResponse>>(
+      "/auth/verify-2fa",
+      payload,
+    );
+    return response.data;
+  },
+
+  setup2FA: async () => {
+    const response =
+      await axiosInstance.post<ApiResponse<string>>("/auth/2fa/setup");
+    return response.data;
+  },
+
+  confirm2FA: async (code: number) => {
+    const response = await axiosInstance.post<ApiResponse<null>>(
+      "/auth/2fa/confirm",
+      { code },
+    );
+    return response.data;
+  },
+
+  disable2FA: async (password: string) => {
+    const response = await axiosInstance.post<ApiResponse<null>>(
+      "/auth/2fa/disable",
+      { password },
+    );
+    return response.data;
+  },
+
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axiosInstance.post<ApiResponse<UserProfile>>(
+      "/auth/avatar",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       },
     );
     return response.data;

@@ -177,6 +177,7 @@ export default function GroupsPage() {
                 key={group.id}
                 group={group}
                 userEmail={user?.email}
+                userAvatar={user?.avatarUrl}
                 onAction={handleActionClick}
                 onViewLogs={() => handleViewLogs(group.id)}
               />

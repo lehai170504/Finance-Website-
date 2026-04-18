@@ -138,7 +138,7 @@ export function SetBudgetModal({
               disabled={setBudget.isPending || !categoryId || !limitAmount}
               className={cn(
                 "w-full rounded-[1.5rem] font-black uppercase h-14 tracking-[0.15em] transition-all duration-300 shadow-xl",
-                "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-destructive/20 hover:scale-[1.02] active:scale-95",
+                "text-destructive-foreground hover:bg-destructive/90 shadow-destructive/20 hover:scale-[1.02] active:scale-95",
                 "disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:scale-100 disabled:opacity-100",
               )}
             >

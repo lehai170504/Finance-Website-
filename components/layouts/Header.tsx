@@ -222,9 +222,23 @@ export function Header() {
                     variant="ghost"
                     className="group h-11 px-2 pr-4 rounded-2xl bg-muted/40 hover:bg-primary/5 transition-all border border-border/20 gap-3"
                   >
-                    <div className="h-8 w-8 rounded-xl bg-primary text-primary-foreground font-black text-xs flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                      {user.username.charAt(0).toUpperCase()}
+                    <div className="h-9 w-9 rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-110 transition-transform relative border border-border/40 bg-muted">
+                      {user.avatarUrl ? (
+                        <Image
+                          src={user.avatarUrl}
+                          alt={user.username}
+                          fill
+                          sizes="36px"
+                          priority
+                          className="object-cover antialiased"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full bg-primary text-primary-foreground font-black text-xs">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
+
                     <div className="hidden md:flex flex-col items-start leading-none text-left">
                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                         Homie

@@ -2,11 +2,13 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 // Hooks
 import { useGroupById } from "@/hooks/useGroups";
 import { useGroupTransactions } from "@/hooks/useTransactions";
 import { useGroupDetails } from "@/hooks/useGroupDetails";
+import { useProfile } from "@/hooks/useProfile";
 
 // Icons
 import {
@@ -35,6 +37,8 @@ export default function GroupDetailPage() {
   const [page, setPage] = useState(0);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
+
+  const { data: user } = useProfile();
 
   const { data: groupResponse, isLoading: isGroupLoading } = useGroupById(id);
   const currentGroup = groupResponse?.data;
@@ -104,7 +108,7 @@ export default function GroupDetailPage() {
             </div>
           </div>
 
-          {/* MEMBER CHIPS - Thiết kế lại gọn và sang hơn */}
+          {/* MEMBER CHIPS - Hiển thị Avatar xịn xò */}
           <div className="flex flex-wrap items-center gap-2 relative z-10">
             {isGroupLoading ? (
               [1, 2, 3].map((i) => (
@@ -115,19 +119,36 @@ export default function GroupDetailPage() {
               ))
             ) : (
               <>
-                {visibleMembers.map((member: any) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-2.5 bg-background/40 backdrop-blur-sm border border-border/60 px-3.5 py-2 rounded-xl hover:border-primary/40 transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-default group/member"
-                  >
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-[10px] flex items-center justify-center font-black transition-all group-hover/member:bg-primary group-hover/member:text-white group-hover/member:scale-110">
-                      {member.username?.charAt(0).toUpperCase()}
+                {visibleMembers.map((member: any) => {
+                  const isCurrentUser = member.email === user?.email;
+                  const avatar = isCurrentUser
+                    ? user?.avatarUrl
+                    : member.avatarUrl;
+
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center gap-2.5 bg-background/40 backdrop-blur-sm border border-border/60 px-3.5 py-2 rounded-xl hover:border-primary/40 transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-default group/member"
+                    >
+                      <div className="relative w-6 h-6 rounded-lg bg-primary/10 text-primary text-[10px] flex items-center justify-center font-black transition-all group-hover/member:bg-primary group-hover/member:text-white group-hover/member:scale-110 overflow-hidden shadow-sm">
+                        {avatar ? (
+                          <Image
+                            src={avatar}
+                            alt={member.username}
+                            fill
+                            className="object-cover"
+                            sizes="24px"
+                          />
+                        ) : (
+                          member.username?.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <span className="text-[11px] font-black uppercase tracking-tight text-foreground/70">
+                        {member.username}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-black uppercase tracking-tight text-foreground/70">
-                      {member.username}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
                 {hiddenCount > 0 && (
                   <div className="text-[10px] font-black text-primary bg-primary/5 border border-primary/20 px-4 py-2 rounded-xl tracking-widest uppercase shadow-sm">
                     + {hiddenCount} Homies

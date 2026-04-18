@@ -138,8 +138,13 @@ export function QuickTransactionModal({
       {
         onSuccess: () => {
           toast.success("Ghi chép thành công! 🚀");
-          const targetTab = formData.spaceType === "GROUP" ? "GROUP" : "LIST";
-          router.push(`/transactions?tab=${targetTab}`);
+
+          if (formData.spaceType === "GROUP" && formData.groupId) {
+            router.push(`/transactions?tab=GROUP&groupId=${formData.groupId}`);
+          } else {
+            router.push(`/transactions?tab=LIST`);
+          }
+
           resetForm();
           onClose();
         },

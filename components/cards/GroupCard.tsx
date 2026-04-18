@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Trash2,
@@ -9,11 +10,11 @@ import {
   ShieldCheck,
   Activity,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface GroupCardProps {
   group: any;
   userEmail?: string;
+  userAvatar?: string;
   onAction: (e: React.MouseEvent, id: string, isOwner: boolean) => void;
   onViewLogs: () => void;
 }
@@ -21,6 +22,7 @@ interface GroupCardProps {
 export function GroupCard({
   group,
   userEmail,
+  userAvatar,
   onAction,
   onViewLogs,
 }: GroupCardProps) {
@@ -34,7 +36,7 @@ export function GroupCard({
 
           <div>
             <div className="flex justify-between items-start mb-6 relative z-10">
-              <span className="font-money text-[10px] font-bold bg-primary/5 text-primary px-3 py-1.5 rounded-xl border border-primary/10 tracking-tight">
+              <span className="font-money text-[10px] font-bold bg-primary/5 text-primary px-3 py-1.5 rounded-xl border border-primary/10 tracking-tight mt-1">
                 ID: {group.inviteCode}
               </span>
 
@@ -66,7 +68,7 @@ export function GroupCard({
               </div>
             </div>
 
-            <h3 className="text-2xl font-black uppercase leading-tight tracking-tighter group-hover:text-primary transition-colors line-clamp-2 pr-4">
+            <h3 className="text-2xl font-black uppercase leading-tight tracking-tighter group-hover:text-primary transition-colors line-clamp-2 pr-4 mt-2">
               {group.name}
             </h3>
 
@@ -80,17 +82,33 @@ export function GroupCard({
 
           <div className="mt-6 flex items-center justify-between relative z-10">
             <div className="flex -space-x-2.5">
-              {group.members.slice(0, 4).map((m: any, i: number) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-xl bg-muted border-4 border-card flex items-center justify-center text-[11px] font-black uppercase shadow-sm group-hover:border-primary/10 transition-all overflow-hidden"
-                  title={m.username}
-                >
-                  {m.username.charAt(0)}
-                </div>
-              ))}
+              {group.members.slice(0, 4).map((m: any, i: number) => {
+                const isCurrentUser = m.email === userEmail;
+                const avatar = isCurrentUser ? userAvatar : m.avatarUrl;
+
+                return (
+                  <div
+                    key={i}
+                    className="relative w-10 h-10 rounded-xl bg-muted border-[3px] border-card flex items-center justify-center text-[11px] font-black uppercase shadow-sm group-hover:border-primary/10 transition-all overflow-hidden"
+                    title={m.username}
+                  >
+                    {avatar ? (
+                      <Image
+                        src={avatar}
+                        alt={m.username}
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
+                    ) : (
+                      <span>{m.username.charAt(0)}</span>
+                    )}
+                  </div>
+                );
+              })}
+
               {group.members.length > 4 && (
-                <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground border-4 border-card flex items-center justify-center text-[10px] font-black">
+                <div className="w-10 h-10 z-10 rounded-xl bg-primary text-primary-foreground border-[3px] border-card flex items-center justify-center text-[10px] font-black shadow-sm">
                   +{group.members.length - 4}
                 </div>
               )}

@@ -5,6 +5,8 @@ export interface AuthResponse {
   refreshToken: string;
   tokenType?: string;
   username: string;
+  is2faRequired?: boolean;
+  tempToken?: string;
 }
 
 export interface ApiResponse<T> {
@@ -14,7 +16,7 @@ export interface ApiResponse<T> {
 }
 
 export interface LoginPayload {
-  username: string; // Backend Spring Boot của chúng ta dùng trường này cho email
+  loginId: string;
   password: string;
 }
 
@@ -29,10 +31,17 @@ export interface UserProfile {
   username: string;
   email: string;
   role: string;
+  avatarUrl?: string;
+  is2faEnabled?: boolean;
 }
 
 export interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+export interface Verify2FaPayload {
+  tempToken: string;
+  code: number;
 }

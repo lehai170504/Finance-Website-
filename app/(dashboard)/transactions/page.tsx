@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useTransactions, useGroupTransactions } from "@/hooks/useTransactions";
 import { useGroups } from "@/hooks/useGroups";
 import {
@@ -38,9 +38,13 @@ import { EditTransactionModal } from "@/components/modals/EditTransactionModal";
 type TabType = "LIST" | "GROUP" | "TRASH";
 type FilterType = "ALL" | "INCOME" | "EXPENSE";
 
-// 2. Tách toàn bộ logic cũ vào component này
 function TransactionsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Đọc params từ URL
+  const queryTab = searchParams.get("tab");
+  const queryGroupId = searchParams.get("groupId");
 
   const [page, setPage] = useState(0);
   const [groupPage, setGroupPage] = useState(0);
@@ -51,12 +55,12 @@ function TransactionsContent() {
   const [filterType, setFilterType] = useState<FilterType>("ALL");
   const size = 10;
 
+  // 1. Đồng bộ Tab từ URL vào State
   useEffect(() => {
-    const tabQuery = searchParams.get("tab");
-    if (tabQuery === "GROUP" || tabQuery === "LIST" || tabQuery === "TRASH") {
-      setActiveTab(tabQuery as TabType);
+    if (queryTab === "GROUP" || queryTab === "LIST" || queryTab === "TRASH") {
+      setActiveTab(queryTab as TabType);
     }
-  }, [searchParams]);
+  }, [queryTab]);
 
   const {
     data,
@@ -76,8 +80,14 @@ function TransactionsContent() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
 
   useEffect(() => {
-    if (groups.length > 0 && !selectedGroupId) setSelectedGroupId(groups[0].id);
-  }, [groups, selectedGroupId]);
+    if (groups && groups.length > 0) {
+      if (queryGroupId) {
+        setSelectedGroupId(queryGroupId);
+      } else if (!selectedGroupId) {
+        setSelectedGroupId(groups[0].id);
+      }
+    }
+  }, [groups, queryGroupId, selectedGroupId]);
 
   const { data: groupData, isLoading: isGroupLoading } = useGroupTransactions(
     selectedGroupId,
@@ -135,6 +145,13 @@ function TransactionsContent() {
     if (filterType !== "ALL") setFilterType("ALL");
   };
 
+  // Helper để update URL khi đổi group thủ công
+  const handleGroupChange = (val: string) => {
+    setSelectedGroupId(val);
+    setGroupPage(0);
+    router.push(`/transactions?tab=GROUP&groupId=${val}`, { scroll: false });
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-8 mt-6 space-y-10 font-sans">
       {/* HEADER & SUMMARY CARDS */}
@@ -172,12 +189,13 @@ function TransactionsContent() {
       </div>
 
       {/* TABS & CONTROLS BARS */}
-      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 p-2 bg-muted/30 rounded-[2.5rem] border border-border/40 shadow-sm backdrop-blur-lg sticky top-4 z-40">
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 p-2 bg-background/60 rounded-[2.5rem] border border-border/40 shadow-sm backdrop-blur-lg sticky top-4 z-40">
         <div className="flex bg-muted/50 p-1.5 rounded-[2rem] border border-border/20">
           <button
             onClick={() => {
               setActiveTab("LIST");
               setPage(0);
+              router.push("/transactions?tab=LIST", { scroll: false });
             }}
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
@@ -192,6 +210,10 @@ function TransactionsContent() {
             onClick={() => {
               setActiveTab("GROUP");
               setPage(0);
+              const url = selectedGroupId
+                ? `/transactions?tab=GROUP&groupId=${selectedGroupId}`
+                : "/transactions?tab=GROUP";
+              router.push(url, { scroll: false });
             }}
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
@@ -206,6 +228,7 @@ function TransactionsContent() {
             onClick={() => {
               setActiveTab("TRASH");
               setPage(0);
+              router.push("/transactions?tab=TRASH", { scroll: false });
             }}
             className={cn(
               "flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300",
@@ -252,13 +275,7 @@ function TransactionsContent() {
           )}
 
           {activeTab === "GROUP" && (
-            <Select
-              value={selectedGroupId}
-              onValueChange={(val) => {
-                setSelectedGroupId(val);
-                setGroupPage(0);
-              }}
-            >
+            <Select value={selectedGroupId} onValueChange={handleGroupChange}>
               <SelectTrigger className="w-full sm:w-64 h-11 rounded-2xl bg-background border-border/50 text-[10px] font-black uppercase tracking-widest">
                 <Users size={14} className="mr-2" />
                 <SelectValue placeholder="Chọn nhóm" />
@@ -342,7 +359,6 @@ function TransactionsContent() {
   );
 }
 
-// 3. Export mặc định bọc trong Suspense để fix lỗi Build
 export default function TransactionsPage() {
   return (
     <Suspense

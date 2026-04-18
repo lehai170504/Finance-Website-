@@ -23,6 +23,7 @@ import {
   ShieldAlert,
   ArrowUpRight,
   Sparkles,
+  BrainCircuit,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -114,63 +115,109 @@ export default function LandingPage() {
       </motion.header>
 
       <main className="flex-1 w-full">
-        {/* 🚀 HERO SECTION */}
-        <section className="w-full py-32 md:py-56 flex flex-col items-center justify-center text-center px-6 relative">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.5 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1200px] h-[600px] bg-primary/10 blur-[160px] rounded-full pointer-events-none -z-10"
-          />
+        {/* 🚀 HERO SECTION - NÂNG CẤP VỚI BENTO GRID & DYNAMIC GRADIENT */}
+        <section className="w-full pt-32 pb-20 md:pt-48 md:pb-32 flex flex-col items-center justify-center px-6 relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-[1400px] pointer-events-none">
+            <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-primary/20 blur-[180px] rounded-full animate-pulse-slow" />
+            <div className="absolute bottom-[0%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[140px] rounded-full" />
+            <div className="absolute top-[30%] left-[10%] w-[10%] h-[10%] bg-emerald-500/10 blur-[80px] rounded-full animate-bounce-slow" />
+          </div>
 
           <motion.div
             initial="hidden"
             animate="visible"
             variants={{
               hidden: { opacity: 0 },
-              visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
+              visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
             }}
-            className="space-y-12 max-w-6xl relative z-10"
+            className="container mx-auto relative z-10"
           >
-            <motion.div
-              variants={fadeUp}
-              className="inline-flex items-center gap-2 rounded-full bg-muted/50 backdrop-blur-md border border-primary/20 px-6 py-2.5 text-[10px] font-black tracking-[0.4em] text-primary uppercase shadow-inner"
-            >
-              <Sparkles size={14} className="fill-primary" /> Phiên bản 2026 đã
-              sẵn sàng
-            </motion.div>
-
-            <motion.h1
-              variants={fadeUp}
-              className="text-6xl font-black tracking-[calc(-0.06em)] sm:text-7xl md:text-8xl lg:text-9xl leading-[0.8] text-foreground uppercase italic text-balance"
-            >
-              KIẾN TẠO <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-emerald-500 animate-gradient-x">
-                TỰ DO TÀI CHÍNH.
-              </span>
-            </motion.h1>
-
-            <motion.p
-              variants={fadeUp}
-              className="mx-auto max-w-2xl text-muted-foreground text-lg md:text-2xl font-medium leading-relaxed tracking-tight px-4 opacity-80"
-            >
-              Đơn giản hóa việc quản lý dòng tiền cá nhân và gia đình. Ghi chép
-              siêu tốc, báo cáo thông minh, bảo mật tuyệt đối.
-            </motion.p>
-
-            <motion.div
-              variants={fadeUp}
-              className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8"
-            >
-              <Button
-                asChild
-                size="lg"
-                className="rounded-[2.5rem] px-16 h-20 font-black uppercase text-sm tracking-[0.2em] shadow-2xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+            <div className="flex flex-col items-center text-center space-y-12 mb-28">
+               <motion.div
+                variants={fadeUp}
+                className="inline-flex items-center gap-3 rounded-full bg-primary/5 backdrop-blur-2xl border border-primary/20 px-8 py-3 text-[11px] font-black tracking-[0.5em] text-primary uppercase shadow-2xl group cursor-default"
               >
-                <Link href="/register" className="flex items-center gap-4">
-                  Gia nhập ngay <ArrowRight size={20} strokeWidth={3} />
+                <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                <span className="group-hover:tracking-[0.6em] transition-all duration-500">The New Era of Personal Finance</span>
+              </motion.div>
+
+              <motion.h1
+                variants={fadeUp}
+                className="text-7xl font-black tracking-[calc(-0.06em)] sm:text-8xl md:text-[11rem] lg:text-[13rem] leading-[0.8] text-foreground uppercase italic drop-shadow-2xl"
+              >
+                ELITE <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-emerald-500">
+                  HOMIE.
+                </span>
+              </motion.h1>
+
+              <motion.p
+                variants={fadeUp}
+                className="mx-auto max-w-3xl text-muted-foreground text-xl md:text-3xl font-medium leading-relaxed tracking-tight opacity-80 px-4"
+              >
+                Trải nghiệm đỉnh cao quản trị dòng tiền. <br className="hidden md:block" /> 
+                Chính xác. Bảo mật. Cá nhân hóa bởi AI.
+              </motion.p>
+
+              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center gap-6">
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-[2rem] px-12 h-18 font-black uppercase text-sm tracking-[0.2em] shadow-[0_20px_40px_-15px_rgba(var(--primary),0.5)] hover:scale-105 active:scale-95 transition-all bg-primary hover:bg-primary/90"
+                >
+                  <Link href="/register" className="flex items-center gap-4">
+                    Bắt đầu ngay <ArrowRight size={20} strokeWidth={3} />
+                  </Link>
+                </Button>
+                <Link href="#tinh-nang" className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-primary transition-colors">
+                  Khám phá tính năng
                 </Link>
-              </Button>
+              </motion.div>
+            </div>
+
+            {/* BENTO GRID MOCKUP - PHẦN NÀY LÀM ĐIỂM NHẤN WOW */}
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: "circOut" }}
+              className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-7xl mx-auto"
+            >
+              <div className="md:col-span-8 h-[400px] rounded-[3rem] bg-gradient-to-br from-card to-muted/20 border-2 border-border/40 overflow-hidden relative group p-10">
+                 <div className="absolute top-0 right-0 p-10 opacity-20 group-hover:opacity-40 transition-opacity duration-700">
+                    <BarChart3 size={200} className="text-primary" />
+                 </div>
+                 <div className="relative z-10 flex flex-col justify-between h-full">
+                    <div className="space-y-4">
+                       <span className="px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase rounded-full border border-primary/20">Dashboard v2.0</span>
+                       <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">Trải nghiệm <br /> Quản trị 360 độ</h3>
+                    </div>
+                    <div className="flex gap-4">
+                       <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-500 border border-emerald-500/30">
+                          <TrendingUp size={24} />
+                       </div>
+                       <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-500 border border-blue-500/30">
+                          <PieChart size={24} />
+                       </div>
+                    </div>
+                 </div>
+                 {/* Giả lập Dashboard UI mờ ảo */}
+                 <div className="absolute bottom-[-20%] left-1/2 -translate-x-1/2 w-[90%] h-[200px] bg-background/40 backdrop-blur-3xl rounded-t-[2rem] border-x-2 border-t-2 border-primary/10 shadow-2xl" />
+              </div>
+
+              <div className="md:col-span-4 h-[400px] rounded-[3rem] bg-primary border-2 border-primary/40 p-10 flex flex-col justify-between text-white overflow-hidden relative group">
+                <div className="absolute top-[-10%] right-[-10%] opacity-20 animate-spin-slow">
+                   <BrainCircuit size={250} />
+                </div>
+                <div className="relative z-10">
+                   <Sparkles size={48} className="mb-6 fill-white" />
+                   <h3 className="text-4xl font-black uppercase tracking-tighter leading-none mb-6">AI <br /> Financial <br /> Advisor</h3>
+                   <p className="text-white/70 text-sm font-medium leading-relaxed uppercase tracking-widest italic">Personalized Insight <br /> for every homie.</p>
+                </div>
+                <Button className="bg-white text-primary hover:bg-white/90 rounded-2xl h-14 font-black uppercase tracking-widest text-[11px] shadow-2xl relative z-10">
+                  Thử ngay
+                </Button>
+              </div>
             </motion.div>
           </motion.div>
         </section>

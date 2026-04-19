@@ -54,7 +54,7 @@ export default function WalletsPage() {
           <div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground font-money flex items-baseline gap-2 overflow-hidden">
               <span className="truncate">{totalBalance.toLocaleString()}</span>
-              <span className="text-xl md:text-2xl font-black text-primary opacity-40 italic">
+              <span className="text-xl md:text-2xl font-black text-primary opacity-40">
                 đ
               </span>
             </h1>

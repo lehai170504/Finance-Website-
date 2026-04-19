@@ -1,15 +1,34 @@
 import { useReports } from "@/hooks/useReports";
 import { TrendingUp, Calendar, Zap } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export function CashFlowChart() {
   const [days, setDays] = useState(30);
   const { cashFlow, isLoadingCashFlow } = useReports(undefined, undefined, days);
 
-  if (isLoadingCashFlow || cashFlow.length === 0) return null;
+  const { totalIncomeSum, totalExpenseSum } = useMemo(() => {
+    if (!cashFlow) return { totalIncomeSum: 0, totalExpenseSum: 0 };
+    return cashFlow.reduce((acc, d) => ({
+      totalIncomeSum: acc.totalIncomeSum + d.income,
+      totalExpenseSum: acc.totalExpenseSum + d.expense
+    }), { totalIncomeSum: 0, totalExpenseSum: 0 });
+  }, [cashFlow]);
 
-  const maxVal = Math.max(...cashFlow.map(d => Math.max(d.income, d.expense)), 1000000);
+  if (isLoadingCashFlow || cashFlow.length === 0) {
+    return (
+      <div className="h-[450px] w-full p-10 border-2 border-white/5 rounded-[3.5rem] bg-card/30 backdrop-blur-3xl flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
+          <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/30">
+            Đang tải dữ liệu dòng tiền...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const maxVal = Math.max(...cashFlow.map(d => Math.max(d.income, d.expense)), 1000000) * 1.2;
   const width = 1000;
   const height = 300;
   const padding = 40;
@@ -54,10 +73,6 @@ export function CashFlowChart() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground/90">Dòng tiền hệ thống</h2>
             <div className="flex items-center gap-3 mt-1.5">
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Real-time</span>
-              </div>
               <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <Calendar size={12} />
                 Cập nhật lần cuối: Vừa xong
@@ -88,23 +103,29 @@ export function CashFlowChart() {
       </div>
 
       <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 group hover:bg-emerald-500/5 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
-              <Zap size={16} />
+        <div className="flex items-center justify-between p-6 rounded-[2rem] bg-white/5 border-2 border-white/5 group hover:bg-emerald-500/5 hover:border-emerald-500/20 transition-all duration-500">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform">
+              <Zap size={20} strokeWidth={2.5} />
             </div>
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tổng thu nhập</span>
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/40 block mb-1">Tổng thu nhập</span>
+              <p className="text-xl font-black tracking-tighter text-foreground">{totalIncomeSum.toLocaleString()}đ</p>
+            </div>
           </div>
-          <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
+          <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.6)] animate-pulse" />
         </div>
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 group hover:bg-destructive/5 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-destructive/10 text-destructive">
-              <Zap size={16} />
+        <div className="flex items-center justify-between p-6 rounded-[2rem] bg-white/5 border-2 border-white/5 group hover:bg-rose-500/5 hover:border-rose-500/20 transition-all duration-500">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-rose-500/10 text-rose-500 group-hover:scale-110 transition-transform">
+              <Zap size={20} strokeWidth={2.5} />
             </div>
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tổng chi tiêu</span>
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/40 block mb-1">Tổng chi tiêu</span>
+              <p className="text-xl font-black tracking-tighter text-foreground">{totalExpenseSum.toLocaleString()}đ</p>
+            </div>
           </div>
-          <div className="w-3 h-3 rounded-full bg-destructive shadow-[0_0_12px_rgba(244,63,94,0.5)]" />
+          <div className="w-4 h-4 rounded-full bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.6)]" />
         </div>
       </div>
 

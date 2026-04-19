@@ -35,7 +35,7 @@ export function AiChatBot() {
 
     try {
       const res = await aiService.chat(userMsg);
-      setMessages(prev => [...prev, { role: "ai", content: res.response }]);
+      setMessages(prev => [...prev, { role: "ai", content: res.data.response }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: "ai", content: "Lỗi rồi homie ơi, tôi không kết nối được với bộ não trung tâm!" }]);
     } finally {

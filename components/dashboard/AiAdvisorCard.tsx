@@ -34,7 +34,7 @@ export function AiAdvisorCard() {
     return badges;
   };
 
-  const badges = getBadges(data?.advice);
+  const badges = getBadges(data?.data?.advice);
 
   return (
     <div className="lg:col-span-3 p-8 md:p-12 border-2 border-primary/20 rounded-[3rem] bg-gradient-to-br from-primary/5 via-background to-blue-500/5 shadow-2xl shadow-primary/10 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-10 duration-1000">
@@ -78,7 +78,7 @@ export function AiAdvisorCard() {
               ) : (
                 <div className="space-y-6">
                   <p className="text-lg md:text-xl font-medium leading-relaxed text-foreground/90 whitespace-pre-line italic">
-                    {data?.advice}
+                    {data?.data?.advice}
                   </p>
                   
                   {/* Badges linh hoạt */}

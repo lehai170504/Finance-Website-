@@ -8,6 +8,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface TransactionPaginationProps {
   currentPage: number;
@@ -54,54 +55,69 @@ export function TransactionPagination({
   };
 
   return (
-    <div className="pt-8 pb-4">
+    <div className="py-4">
       <Pagination>
-        <PaginationContent className="gap-2">
+        <PaginationContent className="gap-3 p-2 rounded-[2rem] bg-white/5 border border-white/5 backdrop-blur-xl shadow-2xl">
           {/* NÚT TRƯỚC */}
-          <PaginationItem>
-            <PaginationPrevious
+          <PaginationItem>  
+            <button
               onClick={() => onPageChange(Math.max(0, currentPage - 1))}
+              disabled={currentPage === 0}
               className={cn(
-                "cursor-pointer rounded-xl font-black uppercase text-[9px] tracking-[0.2em] px-4 h-10 border-border/50 hover:bg-muted/50 transition-all",
-                currentPage === 0 && "pointer-events-none opacity-30",
+                "flex items-center gap-2 px-4 h-11 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-300",
+                currentPage === 0 
+                  ? "opacity-20 cursor-not-allowed" 
+                  : "hover:bg-primary/10 text-primary hover:translate-x-[-2px] active:scale-95"
               )}
-            />
+            >
+              <ChevronLeft size={14} strokeWidth={3} />
+              <span className="hidden sm:inline">Trước</span>
+            </button>
           </PaginationItem>
 
           {/* DANH SÁCH TRANG */}
-          {generatePagination().map((p, i) => (
-            <PaginationItem key={i}>
-              {p === "ellipsis" ? (
-                <PaginationEllipsis className="text-muted-foreground/50" />
-              ) : (
-                <PaginationLink
-                  onClick={() => onPageChange(p as number)}
-                  isActive={currentPage === p}
-                  className={cn(
-                    "cursor-pointer rounded-xl font-money text-[13px] w-10 h-10 border-border/50 transition-all duration-300",
-                    currentPage === p
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary hover:bg-primary/90 hover:text-primary-foreground scale-110 z-10"
-                      : "hover:bg-muted hover:text-foreground text-muted-foreground",
-                  )}
-                >
-                  {(p as number) + 1}
-                </PaginationLink>
-              )}
-            </PaginationItem>
-          ))}
+          <div className="flex items-center gap-1.5 px-2 border-x border-white/5">
+            {generatePagination().map((p, i) => (
+              <PaginationItem key={i}>
+                {p === "ellipsis" ? (
+                  <div className="w-10 flex justify-center text-muted-foreground/30">
+                    <PaginationEllipsis />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => onPageChange(p as number)}
+                    className={cn(
+                      "w-11 h-11 rounded-2xl font-money text-[14px] font-black transition-all duration-500 relative group",
+                      currentPage === p
+                        ? "bg-primary text-white shadow-[0_0_20px_rgba(59,130,246,0.5)] scale-110 z-10"
+                        : "text-muted-foreground/40 hover:bg-white/10 hover:text-foreground"
+                    )}
+                  >
+                    {(p as number) + 1}
+                    {currentPage === p && (
+                       <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full animate-pulse" />
+                    )}
+                  </button>
+                )}
+              </PaginationItem>
+            ))}
+          </div>
 
           {/* NÚT SAU */}
           <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                onPageChange(Math.min(totalPages - 1, currentPage + 1))
-              }
+            <button
+              onClick={() => onPageChange(Math.min(totalPages - 1, currentPage + 1))}
+              disabled={currentPage >= totalPages - 1}
               className={cn(
-                "cursor-pointer rounded-xl font-black uppercase text-[9px] tracking-[0.2em] px-4 h-10 border-border/50 hover:bg-muted/50 transition-all",
-                currentPage >= totalPages - 1 &&
-                  "pointer-events-none opacity-30",
+                "flex items-center gap-2 px-4 h-11 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-300",
+                currentPage >= totalPages - 1 
+                  ? "opacity-20 cursor-not-allowed" 
+                  : "hover:bg-primary/10 text-primary hover:translate-x-[2px] active:scale-95"
               )}
-            />
+            >
+              <span className="hidden sm:inline">Sau</span>
+              <ChevronRight size={14} strokeWidth={3} />
+            </button>
           </PaginationItem>
         </PaginationContent>
       </Pagination>

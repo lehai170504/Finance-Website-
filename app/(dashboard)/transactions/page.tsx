@@ -292,8 +292,8 @@ function TransactionsContent() {
         </div>
       </div>
 
-      <main className="min-h-[400px] pb-20">
-        <div className="animate-in fade-in slide-in-from-bottom-3 duration-700">
+      <main className="min-h-[500px] pb-20">
+        <div className="animate-in fade-in slide-in-from-bottom-1 duration-400 ease-out">
           {activeTab === "LIST" && (
             <PersonalTab
               keyword={keyword}

@@ -2,6 +2,7 @@ import { axiosInstance } from "@/lib/axios";
 import { ApiResponse } from "@/types/auth";
 import { TransactionResponse } from "@/types/group";
 import {
+  BulkTransactionRequest,
   OCRResponse,
   PaginatedResponse,
   Transaction,
@@ -164,6 +165,14 @@ export const transactionService = {
       {
         headers: { "Content-Type": "multipart/form-data" },
       },
+    );
+    return response.data;
+  },
+
+  bulkCreate: async (data: BulkTransactionRequest) => {
+    const response = await axiosInstance.post<ApiResponse<Transaction[]>>(
+      "/transactions/bulk-create",
+      data,
     );
     return response.data;
   },

@@ -29,13 +29,18 @@ export function AiChatBot() {
     if (!input.trim() || isLoading) return;
 
     const userMsg = input.trim();
+    const chatHistory = messages.map(m => ({
+      role: m.role === "ai" ? "model" : "user",
+      content: m.content
+    }));
+
     setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setIsLoading(true);
 
     try {
-      const res = await aiService.chat(userMsg);
-      setMessages(prev => [...prev, { role: "ai", content: res.data.response }]);
+      const res = await aiService.chat(userMsg, chatHistory);
+      setMessages(prev => [...prev, { role: "ai", content: res.data }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: "ai", content: "Lỗi rồi homie ơi, tôi không kết nối được với bộ não trung tâm!" }]);
     } finally {

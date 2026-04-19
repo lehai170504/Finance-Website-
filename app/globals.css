@@ -68,6 +68,7 @@
   body {
     @apply overflow-x-hidden w-full max-w-[100vw];
     scrollbar-gutter: stable;
+    overflow-y: scroll;
   }
 
   body {

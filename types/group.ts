@@ -2,6 +2,7 @@ export interface GroupMember {
   id: string;
   username: string;
   email: string;
+  avatarUrl?: string;
 }
 
 export interface Group {

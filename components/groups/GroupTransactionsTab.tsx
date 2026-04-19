@@ -2,19 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { GroupTransactionListItem } from "./GroupTransactionListItem";
-import { ChevronLeft, ChevronRight, History, Layers } from "lucide-react";
-
-interface GroupTransactionsTabProps {
-  transactions: any[];
-  totalElements: number;
-  totalPages: number;
-  isLoading: boolean;
-  page: number;
-  setPage: (page: number | ((p: number) => number)) => void;
-}
+import { ChevronLeft, ChevronRight, History, Layers, Sparkles } from "lucide-react";
 
 export function GroupTransactionsTab({
   transactions,
+  members,
   totalElements,
   totalPages,
   isLoading,
@@ -22,68 +14,96 @@ export function GroupTransactionsTab({
   setPage,
 }: any) {
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-center bg-muted/30 p-4 rounded-3xl border border-border/50">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-primary/10 rounded-xl text-primary border border-primary/10">
-            <History size={18} />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-10">
+      
+      {/* HEADER - LIST METADATA */}
+      <div className="flex justify-between items-center bg-muted/20 p-5 rounded-[2rem] border-2 border-border/40 backdrop-blur-sm shadow-inner">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary/10 rounded-2xl text-primary border border-primary/20">
+            <History size={20} strokeWidth={2.5} />
           </div>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground/80">
-            Lịch sử nhóm
-          </h2>
+          <div>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground/80">
+              Dòng thời gian nhóm
+            </h2>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+              Tất cả biến động tài chính
+            </p>
+          </div>
         </div>
-        <span className="font-money text-[10px] font-bold text-muted-foreground bg-background px-3 py-1 rounded-full border border-border/50 shadow-sm uppercase">
-          {totalElements || 0} GIAO DỊCH
-        </span>
+        <div className="flex items-center gap-2 bg-background/50 px-4 py-2 rounded-xl border border-border/40 shadow-sm">
+           <Sparkles size={12} className="text-amber-500" />
+           <span className="font-money text-[10px] font-black text-primary uppercase tracking-widest">
+            {totalElements || 0} Giao dịch
+          </span>
+        </div>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-20 w-full bg-muted/40 animate-pulse rounded-3xl border border-border/20"
-            />
-          ))}
-        </div>
-      ) : transactions.length === 0 ? (
-        <div className="py-24 text-center border-2 border-dashed rounded-[3rem] border-muted/20 bg-muted/[0.02]">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 italic">
-            Chưa có giao dịch
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {transactions.map((trans: any) => (
-            <GroupTransactionListItem key={trans.id} trans={trans} />
-          ))}
-        </div>
-      )}
+      {/* TRANSACTION LIST */}
+      <div className="min-h-[400px]">
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-24 w-full bg-muted/10 animate-pulse rounded-[2.5rem] border-2 border-dashed border-border/20"
+              />
+            ))}
+          </div>
+        ) : transactions.length === 0 ? (
+          <div className="py-32 text-center border-2 border-dashed rounded-[3.5rem] border-border/40 bg-muted/5 flex flex-col items-center gap-6">
+            <div className="p-8 bg-muted/20 rounded-full text-muted-foreground/10">
+               <Layers size={64} strokeWidth={1} />
+            </div>
+            <div className="space-y-2">
+               <p className="text-xl font-black uppercase tracking-tighter text-muted-foreground/50">Chưa có giao dịch nào</p>
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 italic">
+                  Hãy bắt đầu ghi chép để theo dõi dòng tiền homie nhé!
+               </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {transactions.map((trans: any, index: number) => (
+              <div 
+                key={trans.id} 
+                className="animate-in fade-in slide-in-from-left-4"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <GroupTransactionListItem trans={trans} members={members} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
+      {/* PAGINATION - PREMIUM CONTROLS */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-5 mt-12 pb-6">
+        <div className="flex justify-center items-center gap-6 mt-16 pt-8 border-t border-border/20">
           <Button
-            variant="outline"
+            variant="ghost"
             disabled={page === 0}
             onClick={() => setPage((p: any) => p - 1)}
-            className="rounded-xl font-black uppercase text-[9px] tracking-[0.2em] h-10 px-5 border-border/50 hover:bg-muted/50 transition-all"
+            className="w-14 h-14 rounded-2xl border-2 border-border/40 hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-90"
           >
-            Trước
+            <ChevronLeft size={24} strokeWidth={3} />
           </Button>
-          <div className="flex items-center gap-2.5 font-money text-xs px-4 py-2 bg-muted/40 rounded-xl border border-border/50">
-            <span className="font-black text-primary">{page + 1}</span>
-            <span className="opacity-30">/</span>
-            <span className="font-bold text-muted-foreground">
+
+          <div className="flex items-center gap-3 font-money text-sm px-6 py-3 bg-muted/40 rounded-2xl border-2 border-border/40 shadow-inner">
+            <span className="font-black text-primary text-lg">{page + 1}</span>
+            <span className="text-muted-foreground/30 font-black text-lg">/</span>
+            <span className="font-bold text-muted-foreground/60 text-lg">
               {totalPages}
             </span>
           </div>
+
           <Button
-            variant="outline"
+            variant="ghost"
             disabled={page >= totalPages - 1}
             onClick={() => setPage((p: any) => p + 1)}
-            className="rounded-xl font-black uppercase text-[9px] tracking-[0.2em] h-10 px-5 border-border/50 hover:bg-muted/50 transition-all"
+            className="w-14 h-14 rounded-2xl border-2 border-border/40 hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-90"
           >
-            Sau
+            <ChevronRight size={24} strokeWidth={3} />
           </Button>
         </div>
       )}

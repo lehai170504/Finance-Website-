@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 // Hooks
 import { useGroupById } from "@/hooks/useGroups";
@@ -19,6 +20,8 @@ import {
   Users,
   CalendarDays,
   Sparkles,
+  Loader2,
+  Copy,
 } from "lucide-react";
 
 // Components & UI
@@ -52,142 +55,129 @@ export default function GroupDetailPage() {
   const { stats, isStatsLoading, debts, isDebtsLoading, settleDebt } =
     useGroupDetails(id, month, year);
 
-  const visibleMembers = currentGroup?.members?.slice(0, 5) || [];
-  const hiddenCount = (currentGroup?.members?.length || 0) - 5;
+  const visibleMembers = currentGroup?.members?.slice(0, 6) || [];
+  const hiddenCount = (currentGroup?.members?.length || 0) - 6;
+
+  const handleCopyCode = () => {
+    if (currentGroup?.inviteCode) {
+      navigator.clipboard.writeText(currentGroup.inviteCode);
+      toast.success("Đã sao chép mã nhóm! Gửi cho đồng đội ngay nhé");
+    }
+  };
+
+  if (isGroupLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] font-sans">
+        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6" />
+        <p className="font-black uppercase tracking-[0.3em] text-primary animate-pulse text-[10px]">
+          Đang kết nối không gian nhóm...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 md:p-8 mt-6 font-sans mb-20 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div className="flex justify-between items-center mb-12">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 hover:text-primary transition-all group"
-        >
-          <div className="p-2.5 bg-muted/40 rounded-xl border border-border/40 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all shadow-sm">
-            <ChevronLeft
-              size={14}
-              strokeWidth={3}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-          </div>
-          Trở về không gian chung
-        </button>
-      </div>
-
-      {/* HEADER SECTION: TỔNG QUAN NHÓM */}
-      <div className="mb-14 space-y-10 border-b border-border/40 pb-14 relative overflow-hidden">
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 space-y-12 font-sans mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* HEADER SECTION - PREMIUM HUB */}
+      <div className="relative p-8 md:p-12 border-2 border-border/40 rounded-[3.5rem] bg-card shadow-2xl shadow-black/5 overflow-hidden group/header">
         {/* Glow nền mờ ảo */}
-        <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-10 relative z-10">
+          <div className="space-y-8 w-full xl:w-auto">
+            <button
+              onClick={() => router.push("/groups")}
+              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 hover:text-primary transition-all group/back"
+            >
+              <div className="p-2 bg-muted/40 rounded-xl border border-border/40 group-hover/back:bg-primary/10 group-hover/back:border-primary/20 transition-all">
+                <ChevronLeft size={14} strokeWidth={3} className="group-hover/back:-translate-x-1 transition-transform" />
+              </div>
+              Về không gian chung
+            </button>
 
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
-          <div className="flex flex-col md:flex-row md:items-center gap-8 relative z-10">
-            <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] text-primary flex items-center justify-center shadow-inner border border-primary/20 transition-all hover:scale-105 hover:rotate-3 group">
-              <Users
-                size={42}
-                strokeWidth={2.5}
-                className="group-hover:animate-pulse"
-              />
-            </div>
-
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="flex items-center gap-1.5 text-[9px] font-black bg-primary text-white px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20 border border-primary/20">
-                  <Sparkles size={10} /> Không gian hoạt động
+                <span className="flex items-center gap-1.5 text-[9px] font-black bg-primary text-white px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20">
+                  <Sparkles size={10} /> Group Hub v3.0
                 </span>
                 <span className="flex items-center gap-1.5 text-[10px] font-money font-bold text-muted-foreground/80 bg-muted/50 px-3 py-1 rounded-full border border-border/40 uppercase tracking-tighter">
-                  <CalendarDays size={12} /> {month.toString().padStart(2, "0")}
-                  /{year}
+                  <CalendarDays size={12} /> {month.toString().padStart(2, "0")}/{year}
                 </span>
               </div>
-              <h1 className="text-5xl md:text-8xl font-black p-2 tracking-tighter uppercase leading-[0.85] text-foreground">
-                {isGroupLoading ? (
-                  <div className="h-16 w-80 bg-muted/60 animate-pulse rounded-2xl" />
-                ) : (
-                  currentGroup?.name
-                )}
+
+              <h1 className="text-4xl md:text-7xl font-black tracking-tighter uppercase leading-none text-foreground">
+                {currentGroup?.name}
               </h1>
+
+              <div className="flex flex-wrap items-center gap-6 pt-2">
+                {/* Join Code Badge */}
+                <div 
+                  onClick={handleCopyCode}
+                  className="flex items-center gap-3 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer px-5 py-2.5 rounded-2xl border-2 border-dashed border-primary/20 group/code"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Mã mời:</span>
+                  <span className="font-money font-bold text-xl text-primary tracking-widest">{currentGroup?.inviteCode}</span>
+                  <Copy size={14} className="text-primary/40 group-hover/code:text-primary transition-colors" />
+                </div>
+
+                {/* Member Avatars */}
+                <div className="flex items-center gap-3 bg-muted/30 px-4 py-2 rounded-2xl border border-border/40 backdrop-blur-sm">
+                  <div className="flex -space-x-3">
+                    {visibleMembers.map((m: any, i: number) => {
+                       const avatar = m.email === user?.email ? user?.avatarUrl : m.avatarUrl;
+                       return (
+                        <div 
+                          key={i} 
+                          className="w-9 h-9 rounded-full border-2 border-card bg-muted flex items-center justify-center overflow-hidden shadow-lg transition-transform hover:scale-110 hover:z-20 group/avatar"
+                        >
+                           {avatar ? (
+                             <Image src={avatar} alt={m.username} width={36} height={36} className="object-cover" />
+                           ) : (
+                             <span className="text-[10px] font-black uppercase text-muted-foreground/60">{m.username.charAt(0)}</span>
+                           )}
+                        </div>
+                       )
+                    })}
+                  </div>
+                  {hiddenCount > 0 && (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+                      + {hiddenCount} Homies
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* MEMBER CHIPS - Hiển thị Avatar xịn xò */}
-          <div className="flex flex-wrap items-center gap-2 relative z-10">
-            {isGroupLoading ? (
-              [1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-24 h-9 bg-muted/60 animate-pulse rounded-xl"
-                />
-              ))
-            ) : (
-              <>
-                {visibleMembers.map((member: any) => {
-                  const isCurrentUser = member.email === user?.email;
-                  const avatar = isCurrentUser
-                    ? user?.avatarUrl
-                    : member.avatarUrl;
-
-                  return (
-                    <div
-                      key={member.id}
-                      className="flex items-center gap-2.5 bg-background/40 backdrop-blur-sm border border-border/60 px-3.5 py-2 rounded-xl hover:border-primary/40 transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-default group/member"
-                    >
-                      <div className="relative w-6 h-6 rounded-lg bg-primary/10 text-primary text-[10px] flex items-center justify-center font-black transition-all group-hover/member:bg-primary group-hover/member:text-white group-hover/member:scale-110 overflow-hidden shadow-sm">
-                        {avatar ? (
-                          <Image
-                            src={avatar}
-                            alt={member.username}
-                            fill
-                            className="object-cover"
-                            sizes="24px"
-                          />
-                        ) : (
-                          member.username?.charAt(0).toUpperCase()
-                        )}
-                      </div>
-                      <span className="text-[11px] font-black uppercase tracking-tight text-foreground/70">
-                        {member.username}
-                      </span>
-                    </div>
-                  );
-                })}
-                {hiddenCount > 0 && (
-                  <div className="text-[10px] font-black text-primary bg-primary/5 border border-primary/20 px-4 py-2 rounded-xl tracking-widest uppercase shadow-sm">
-                    + {hiddenCount} Homies
-                  </div>
-                )}
-              </>
-            )}
+          {/* NAVIGATION TABS - GLASS STYLE */}
+          <div className="flex flex-wrap p-2 bg-muted/40 backdrop-blur-xl rounded-[2.5rem] border border-border/40 shadow-inner w-full xl:w-auto">
+            {[
+              { id: "TRANSACTIONS", label: "Sổ giao dịch", icon: ReceiptText },
+              { id: "STATS", label: "Phân tích", icon: PieChart },
+              { id: "DEBTS", label: "Quyết toán", icon: HandCoins },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id as TabType);
+                    if (tab.id !== "TRANSACTIONS") setPage(0);
+                  }}
+                  className={cn(
+                    "flex-1 xl:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                    isActive
+                      ? "bg-background shadow-2xl shadow-black/10 text-primary scale-105 border border-border/50"
+                      : "text-muted-foreground/60 hover:text-foreground hover:bg-white/5"
+                  )}
+                >
+                  <tab.icon size={16} strokeWidth={isActive ? 3 : 2} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </div>
-
-      {/* NAVIGATION TABS: DẠNG GLASSMORPHISM */}
-      <div className="sticky top-20 z-40 mb-12">
-        <div className="flex p-1.5 bg-muted/40 backdrop-blur-xl rounded-[2rem] border border-border/40 w-fit mx-auto md:mx-0 shadow-2xl shadow-black/5">
-          {[
-            { id: "TRANSACTIONS", label: "Sổ giao dịch", icon: ReceiptText },
-            { id: "STATS", label: "Phân tích chi", icon: PieChart },
-            { id: "DEBTS", label: "Quyết toán nợ", icon: HandCoins },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id as TabType);
-                  if (tab.id !== "TRANSACTIONS") setPage(0);
-                }}
-                className={cn(
-                  "flex items-center gap-2.5 px-6 py-3.5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-500",
-                  isActive
-                    ? "bg-background shadow-xl text-primary scale-105 border border-border/50"
-                    : "text-muted-foreground/60 hover:text-foreground hover:bg-background/40",
-                )}
-              >
-                <tab.icon size={16} strokeWidth={isActive ? 3 : 2} />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            );
-          })}
         </div>
       </div>
 
@@ -197,6 +187,7 @@ export default function GroupDetailPage() {
           {activeTab === "TRANSACTIONS" && (
             <GroupTransactionsTab
               transactions={transactions}
+              members={currentGroup?.members || []}
               totalElements={transData?.data?.totalElements || 0}
               totalPages={transData?.data?.totalPages || 0}
               isLoading={isTransLoading}

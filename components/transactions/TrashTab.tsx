@@ -15,7 +15,7 @@ export function TrashTab({
   onForceDelete,
 }: TrashTabProps) {
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6">
       <div className="flex justify-between items-end px-1">
         <h3 className="font-black uppercase tracking-[0.15em] text-[11px] text-destructive/80">
           Lịch sử đã xóa

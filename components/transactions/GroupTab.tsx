@@ -28,7 +28,7 @@ export function GroupTab({
   onDelete,
 }: GroupTabProps) {
   return (
-    <div className="flex flex-col min-h-125 animate-in fade-in duration-500">
+    <div className="flex flex-col min-h-125">
       {/* HEADER */}
       <div className="flex justify-between items-end px-1 min-h-9 mb-6">
         <h3 className="font-black uppercase tracking-[0.15em] text-[11px] text-muted-foreground/80">

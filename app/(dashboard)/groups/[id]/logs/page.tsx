@@ -10,12 +10,12 @@ import {
   Activity,
   ShieldAlert,
   Search,
-  User as UserIcon,
   Calendar,
   RefreshCcw,
   LayoutList,
   History,
   Clock,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -26,6 +26,7 @@ export default function GroupLogsPage() {
   const { id } = useParams();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string>("ALL");
 
   const {
     data: logs,
@@ -35,19 +36,36 @@ export default function GroupLogsPage() {
     refetch,
   } = useGroupLogs(id as string);
 
+  const getActionConfig = (action: string) => {
+    const act = action.toUpperCase();
+    if (act.includes("CREATE")) return { color: "emerald", label: "Tạo mới", icon: Plus };
+    if (act.includes("UPDATE")) return { color: "amber", label: "Cập nhật", icon: RefreshCcw };
+    if (act.includes("DELETE")) return { color: "rose", label: "Xóa bỏ", icon: ShieldAlert };
+    return { color: "blue", label: "Hệ thống", icon: Activity };
+  };
+
   const filteredLogs = logs?.filter(
     (log: any) =>
-      log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.updatedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action.toLowerCase().includes(searchTerm.toLowerCase()),
+      log.action.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (activeFilter === "ALL" || log.action.includes(activeFilter))
   );
+
+  // Nhóm logs theo ngày
+  const groupedLogs = filteredLogs?.reduce((groups: any, log: any) => {
+    const date = format(parseISO(log.updatedAt), "yyyy-MM-dd");
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(log);
+    return groups;
+  }, {});
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] font-sans">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6" />
-        <p className="font-black uppercase tracking-[0.3em] text-primary animate-pulse text-xs">
-          Đang truy xuất dữ liệu...
+        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6" />
+        <p className="font-black uppercase tracking-[0.3em] text-primary animate-pulse text-[10px]">
+          Đang truy xuất dữ liệu forensic...
         </p>
       </div>
     );
@@ -103,34 +121,52 @@ export default function GroupLogsPage() {
             <ArrowLeft size={24} strokeWidth={3} />
           </Button>
           <div className="space-y-1">
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none flex items-center gap-3">
-              <Activity className="text-primary" size={32} strokeWidth={3} />
+            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none flex items-center gap-3">
+              <History className="text-primary" size={40} strokeWidth={3} />
               Nhật ký nhóm
             </h1>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-              Kiểm soát mọi biến động dữ liệu
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] ml-1">
+              Dữ liệu minh bạch • Đồng đội tin cậy
             </p>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full xl:w-96 z-10 group">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors"
-            size={18}
-          />
-          <Input
-            placeholder="Lọc thành viên, hành động..."
-            className="h-14 pl-12 pr-6 rounded-2xl border-2 border-border/60 text-xs font-bold bg-background focus:bg-background transition-all shadow-inner"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto z-10">
+          {/* Quick Filters */}
+          <div className="flex bg-muted/50 p-1 rounded-xl border border-border/40 backdrop-blur-md">
+             {["ALL", "CREATE", "DELETE"].map(f => (
+               <button
+                 key={f}
+                 onClick={() => setActiveFilter(f)}
+                 className={cn(
+                   "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                   activeFilter === f ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-foreground"
+                 )}
+               >
+                 {f === "ALL" ? "Tất cả" : f === "CREATE" ? "Tạo" : "Xóa"}
+               </button>
+             ))}
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative group flex-1 sm:w-64">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors"
+              size={16}
+            />
+            <Input
+              placeholder="Tìm kiếm..."
+              className="h-12 pl-11 pr-6 rounded-xl border-2 border-border/40 text-xs font-bold bg-background/50 focus:bg-background transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
       {/* TIMELINE FEED */}
-      <div className="min-h-[400px]">
-        {filteredLogs?.length === 0 ? (
+      <div className="min-h-[500px]">
+        {!groupedLogs || Object.keys(groupedLogs).length === 0 ? (
           <div className="py-32 flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] border-border/40 bg-muted/10">
             <LayoutList size={48} className="mb-4 opacity-10" />
             <p className="font-black uppercase tracking-[0.2em] text-[10px] text-muted-foreground/60">
@@ -138,91 +174,93 @@ export default function GroupLogsPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-10 relative px-2">
-            {/* Đường Timeline chạy dọc */}
-            <div className="absolute left-[31px] top-4 bottom-4 w-1 bg-gradient-to-b from-primary/40 via-border/50 to-transparent hidden md:block rounded-full" />
+          <div className="space-y-16 relative">
+            {/* Main Timeline Spine */}
+            <div className="absolute left-[23px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary/30 via-border to-transparent hidden md:block" />
 
-            {filteredLogs?.map((log: any, index: number) => {
-              const logDate = parseISO(log.updatedAt);
-              const isDelete = log.action.includes("DELETE");
-              const isCreate = log.action.includes("CREATE");
-
-              return (
-                <div
-                  key={log.id}
-                  className="group relative flex gap-8 animate-in fade-in slide-in-from-left-4 duration-500"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  {/* Icon Timeline Point */}
-                  <div className="hidden md:flex flex-col items-center relative z-10">
-                    <div
-                      className={cn(
-                        "w-16 h-16 rounded-[1.25rem] flex items-center justify-center transition-all duration-500 shadow-lg border-4 border-background group-hover:scale-110",
-                        isDelete
-                          ? "bg-red-500 text-white shadow-red-500/20"
-                          : isCreate
-                            ? "bg-emerald-500 text-white shadow-emerald-500/20"
-                            : "bg-blue-500 text-white shadow-blue-500/20",
-                      )}
-                    >
-                      {isDelete ? (
-                        <ShieldAlert size={20} />
-                      ) : (
-                        <UserIcon size={20} />
-                      )}
-                    </div>
+            {Object.keys(groupedLogs).sort((a, b) => b.localeCompare(a)).map((date) => (
+              <div key={date} className="space-y-8">
+                {/* STICKY DATE HEADER */}
+                <div className="sticky top-24 z-20 flex items-center gap-4 bg-background/80 backdrop-blur-md py-2 px-1">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary shadow-inner">
+                    <Calendar size={20} strokeWidth={3} />
                   </div>
-
-                  {/* Nội dung Card */}
-                  <div className="flex-1 space-y-4 p-7 rounded-[2.5rem] bg-card border-2 border-border/40 hover:border-primary/30 hover:shadow-2xl transition-all duration-500 relative overflow-hidden group/card">
-                    {/* Hành động tag nổi bật */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <span className="font-black text-lg text-foreground tracking-tighter uppercase">
-                          {log.updatedBy}
-                        </span>
-                        <span
-                          className={cn(
-                            "px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border shadow-sm",
-                            isCreate
-                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                              : isDelete
-                                ? "bg-red-500/10 text-red-600 border-red-500/20"
-                                : "bg-blue-500/10 text-blue-600 border-blue-500/20",
-                          )}
-                        >
-                          {log.action}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-[10px] font-money font-bold text-muted-foreground/60 uppercase tracking-tighter bg-muted/40 px-3 py-1.5 rounded-lg border border-border/40">
-                        <Clock size={12} />
-                        {format(logDate, "HH:mm", { locale: vi })}
-                        <span className="mx-1 opacity-30">|</span>
-                        <Calendar size={12} />
-                        {format(logDate, "dd/MM/yyyy", { locale: vi })}
-                      </div>
-                    </div>
-
-                    {/* Hộp chi tiết nội dung */}
-                    <div className="p-5 rounded-2xl bg-muted/20 text-[13px] font-semibold text-foreground/80 leading-relaxed border-l-4 border-primary transition-all group-hover/card:bg-muted/30">
-                      {log.details}
-                    </div>
-
-                    {/* Metadata TX ID */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-2 text-[9px] font-money font-black uppercase tracking-widest text-muted-foreground/40">
-                        <span className="bg-muted/50 px-2 py-0.5 rounded">
-                          ID:{" "}
-                          {log.transactionId?.substring(0, 12) ||
-                            "SYSTEM_EVENT"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.3em] text-foreground/80">
+                    {format(parseISO(date), "EEEE, dd 'tháng' MM", { locale: vi })}
+                  </h3>
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-border/50 to-transparent" />
                 </div>
-              );
-            })}
+
+                <div className="space-y-10 pl-0 md:pl-2">
+                  {groupedLogs[date].map((log: any, idx: number) => {
+                    const config = getActionConfig(log.action);
+                    const ActionIcon = config.icon;
+                    const logTime = format(parseISO(log.updatedAt), "HH:mm");
+
+                    return (
+                      <div
+                        key={log.id}
+                        className="group relative flex gap-6 md:gap-10 animate-in fade-in slide-in-from-left-4"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        {/* ICON & SPINE POINT */}
+                        <div className="hidden md:flex flex-col items-center">
+                          <div className={cn(
+                            "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 z-10 border-2 border-background",
+                            config.color === "emerald" ? "bg-emerald-500 text-white shadow-emerald-500/20" :
+                            config.color === "rose" ? "bg-rose-500 text-white shadow-rose-500/20" :
+                            config.color === "amber" ? "bg-amber-500 text-white shadow-amber-500/20" :
+                            "bg-blue-500 text-white shadow-blue-500/20"
+                          )}>
+                            <ActionIcon size={20} strokeWidth={2.5} />
+                          </div>
+                        </div>
+
+                        {/* CONTENT CARD */}
+                        <div className="flex-1 bg-card border border-border/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-500 group/card relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-4 opacity-[0.02] group-hover/card:scale-150 transition-transform duration-700">
+                             <ActionIcon size={80} />
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 relative z-10">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground border border-border/50">
+                                {log.updatedBy.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-black text-sm uppercase tracking-tight">{log.updatedBy}</span>
+                                <span className={cn(
+                                  "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md w-fit mt-0.5",
+                                  config.color === "emerald" ? "bg-emerald-500/10 text-emerald-600" :
+                                  config.color === "rose" ? "bg-rose-500/10 text-rose-600" :
+                                  config.color === "amber" ? "bg-amber-500/10 text-amber-600" :
+                                  "bg-blue-500/10 text-blue-600"
+                                )}>
+                                  {config.label}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-[10px] font-money font-bold text-muted-foreground/40 bg-muted/30 px-3 py-1.5 rounded-xl border border-border/20 flex items-center gap-2">
+                               <Clock size={12} /> {logTime}
+                            </div>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-muted/30 border-l-4 border-primary/40 text-[13px] font-bold text-foreground/80 leading-relaxed group-hover/card:bg-muted/50 transition-colors">
+                            {log.details}
+                          </div>
+
+                          <div className="mt-4 flex items-center gap-3">
+                             <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/30 px-2 py-1 bg-muted/10 rounded-lg">
+                               TRX: {log.transactionId?.substring(0, 8) || "SYSTEM"}
+                             </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

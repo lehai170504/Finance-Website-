@@ -26,7 +26,7 @@ export function PersonalTab({
   onDelete,
 }: PersonalTabProps) {
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6">
       <div className="flex justify-between items-end px-1">
         <h3 className="font-black uppercase tracking-[0.15em] text-[11px] text-muted-foreground/80">
           {keyword

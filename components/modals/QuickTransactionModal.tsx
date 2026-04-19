@@ -13,6 +13,7 @@ import {
   Users,
   Wallet,
   ScanLine,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -58,9 +59,11 @@ export function QuickTransactionModal({
   const { wallets, isLoading: isWalletsLoading } = useWallets();
   const { categories, isLoading: isCatsLoading } = useCategories();
   const { groups, isLoading: isGroupsLoading } = useGroups();
-  const { createTransaction } = useTransactions();
+  const { createTransaction, bulkCreate } = useTransactions();
   const { mutate: suggest, isPending: isSuggesting } = useSuggestCategory();
   const { mutate: analyze, isPending: isAnalyzing } = useOCR();
+
+  const [ocrItems, setOcrItems] = useState<any[]>([]);
 
   const isInitialLoading = isWalletsLoading || isCatsLoading;
 
@@ -72,6 +75,7 @@ export function QuickTransactionModal({
     spaceType: "PERSONAL" as "PERSONAL" | "GROUP",
     groupId: "",
     date: new Date().toISOString().split("T")[0],
+    receiptUrl: "",
   });
 
   useEffect(() => {
@@ -102,9 +106,11 @@ export function QuickTransactionModal({
           if (res.data) {
             setFormData((prev) => ({
               ...prev,
-              amount: res.data.amount.toString(),
-              note: res.data.suggestedNote,
+              amount: res.data.totalAmount ? res.data.totalAmount.toString() : "0",
+              note: res.data.suggestedNote || "",
+              receiptUrl: res.data.receiptUrl || "",
             }));
+            setOcrItems(res.data.items || []);
             toast.success("AI đã đọc hóa đơn xong!");
           }
         },
@@ -133,6 +139,7 @@ export function QuickTransactionModal({
           amount: parseFloat(formData.amount),
           note: formData.note,
           date: formData.date,
+          receiptUrl: formData.receiptUrl || undefined,
         },
       },
       {
@@ -152,6 +159,36 @@ export function QuickTransactionModal({
     );
   };
 
+  const handleSplitTransactions = async () => {
+    if (!formData.walletId) {
+      toast.error("Chọn ví trước đã homie!");
+      return;
+    }
+
+    try {
+      const bulkData = {
+        walletId: formData.walletId,
+        groupId: formData.spaceType === "GROUP" ? formData.groupId : undefined,
+        date: formData.date,
+        receiptUrl: formData.receiptUrl,
+        items: ocrItems.map(item => ({
+          // Tìm ID danh mục khớp nhất với gợi ý của AI
+          categoryId: categories?.find(c => 
+            c.name.toLowerCase().includes(item.categorySuggestion?.toLowerCase())
+          )?.id || formData.categoryId || categories?.[0]?.id,
+          amount: item.amount,
+          note: item.name
+        }))
+      };
+
+      await bulkCreate.mutateAsync(bulkData);
+      onClose();
+      router.push("/transactions?tab=LIST");
+    } catch (error) {
+      console.error("Split error:", error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       amount: "",
@@ -161,6 +198,7 @@ export function QuickTransactionModal({
       spaceType: "PERSONAL",
       groupId: "",
       date: new Date().toISOString().split("T")[0],
+      receiptUrl: "",
     });
   };
 
@@ -221,6 +259,78 @@ export function QuickTransactionModal({
               onSubmit={handleSubmit}
               className="p-8 space-y-6 -mt-8 bg-background rounded-t-[2.5rem] relative z-20"
             >
+              {/* BILL PREVIEW SECTION - TO RÕ RÀNG */}
+              {formData.receiptUrl && (
+                <div className="relative animate-in zoom-in-95 duration-500 -mt-2">
+                  <div className="relative h-44 w-full rounded-[2rem] overflow-hidden border-2 border-primary/20 shadow-2xl group/bill">
+                    <img 
+                      src={formData.receiptUrl} 
+                      alt="Bill" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/bill:scale-110"
+                    />
+                    {/* Overlay Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    
+                    {/* Badge Info */}
+                    <div className="absolute bottom-4 left-6 flex items-center gap-2.5">
+                       <div className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg">
+                          <ScanLine size={14} className="text-white" />
+                       </div>
+                       <div className="flex flex-col">
+                          <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">Hóa đơn đã quét</span>
+                          <span className="text-[11px] font-bold text-white uppercase tracking-tight">Chứng từ đính kèm</span>
+                       </div>
+                    </div>
+
+                    {/* Nút Xóa */}
+                    <button 
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, receiptUrl: "" }))}
+                      className="absolute top-4 right-4 bg-black/20 backdrop-blur-xl hover:bg-rose-500 text-white rounded-full p-2.5 shadow-lg transition-all active:scale-90"
+                    >
+                      <X size={14} strokeWidth={3} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* DANH SÁCH MÓN HÀNG CHI TIẾT (NẾU CÓ) */}
+              {ocrItems.length > 0 && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center justify-between px-1">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary ml-1 flex items-center gap-2">
+                      <Sparkles size={12} className="animate-pulse" /> Chi tiết từng món
+                    </label>
+                    <button 
+                      type="button"
+                      onClick={() => setOcrItems([])}
+                      className="text-[9px] font-bold text-muted-foreground hover:text-rose-500 uppercase tracking-widest transition-colors"
+                    >
+                      Bỏ qua
+                    </button>
+                  </div>
+                  
+                  <div className="bg-muted/30 rounded-3xl p-4 border border-border/40 max-h-[180px] overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20">
+                    <div className="space-y-3">
+                      {ocrItems.map((item, idx) => (
+                        <div key={idx} className="flex items-center justify-between gap-3 p-2.5 bg-background rounded-2xl border border-border/20 shadow-sm group/item hover:border-primary/30 transition-all">
+                          <div className="flex flex-col flex-1 min-w-0">
+                            <span className="text-xs font-bold truncate uppercase">{item.name}</span>
+                            <span className="text-[9px] font-black text-primary/40 uppercase tracking-widest">{item.categorySuggestion}</span>
+                          </div>
+                          <div className="text-sm font-money font-black text-primary bg-primary/5 px-3 py-1.5 rounded-xl border border-primary/10">
+                            {item.amount?.toLocaleString()}đ
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-bold text-muted-foreground/50 italic px-2">
+                    * Homie có thể chọn Tách hóa đơn bên dưới để lưu từng món vào từng danh mục khác nhau.
+                  </p>
+                </div>
+              )}
+
               {/* SỐ TIỀN - FONT MONEY SIÊU BỰ */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
@@ -423,22 +533,46 @@ export function QuickTransactionModal({
                 )}
               </div>
 
-              <Button
-                type="submit"
-                disabled={
-                  createTransaction.isPending || isSuggesting || isAnalyzing
-                }
-                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95"
-              >
-                {createTransaction.isPending ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>ĐANG GHI SỔ...</span>
-                  </div>
-                ) : (
-                  "LƯU GIAO DỊCH"
-                )}
-              </Button>
+                <div className="flex gap-4">
+                  {ocrItems.length > 1 && (
+                    <Button
+                      type="button"
+                      disabled={bulkCreate.isPending || createTransaction.isPending}
+                      onClick={handleSplitTransactions}
+                      className="flex-1 h-16 rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] border-2 border-primary/20 bg-background text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 group"
+                    >
+                      {bulkCreate.isPending ? (
+                        <Loader2 className="animate-spin" size={16} />
+                      ) : (
+                        <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
+                      )}
+                      TÁCH HÓA ĐƠN
+                    </Button>
+                  )}
+                  
+                  <Button
+                    type="submit"
+                    disabled={
+                      createTransaction.isPending || bulkCreate.isPending || isSuggesting || isAnalyzing
+                    }
+                    className={cn(
+                      "h-16 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95",
+                      ocrItems.length > 1 ? "flex-[1.5]" : "w-full"
+                    )}
+                  >
+                    {createTransaction.isPending ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="animate-spin" size={18} />
+                        <span>ĐANG GHI...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Plus size={18} />
+                        <span>{ocrItems.length > 1 ? "GOM CHUNG 1 MÓN" : "LƯU GIAO DỊCH"}</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
             </form>
           </>
         )}

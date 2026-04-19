@@ -13,11 +13,29 @@ import {
   Settings2,
   History,
   Users,
+  MoreVertical,
+  Utensils,
+  Car,
+  Home,
+  ShoppingBag,
+  Banknote,
+  Gift,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Gamepad2,
+  HeartPulse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTransactions } from "@/hooks/useTransactions";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
 import Link from "next/link";
@@ -64,6 +82,21 @@ export function TransactionCard({
     }
   };
 
+  // HÀM HELPER LẤY ICON THEO DANH MỤC
+  const getCategoryIcon = (categoryName: string) => {
+    const name = categoryName?.toLowerCase() || "";
+    if (name.includes("ăn") || name.includes("uống") || name.includes("food")) return <Utensils size={20} />;
+    if (name.includes("xe") || name.includes("đi lại") || name.includes("di chuyển") || name.includes("transport")) return <Car size={20} />;
+    if (name.includes("nhà") || name.includes("ở") || name.includes("rent")) return <Home size={20} />;
+    if (name.includes("mua") || name.includes("sắm") || name.includes("shop")) return <ShoppingBag size={20} />;
+    if (name.includes("lương") || name.includes("thu nhập") || name.includes("salary")) return <Banknote size={20} />;
+    if (name.includes("quà") || name.includes("tặng") || name.includes("gift")) return <Gift size={20} />;
+    if (name.includes("game") || name.includes("giải trí") || name.includes("play")) return <Gamepad2 size={20} />;
+    if (name.includes("sức khỏe") || name.includes("y tế") || name.includes("health")) return <HeartPulse size={20} />;
+    
+    return isExpense ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />;
+  };
+
   return (
     <>
       <div
@@ -84,13 +117,13 @@ export function TransactionCard({
           {/* ICON DANH MỤC */}
           <div
             className={cn(
-              "w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-black text-lg shadow-inner border border-border/50 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
+              "w-12 h-12 shrink-0 rounded-[1.25rem] flex items-center justify-center shadow-lg border-2 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6",
               isExpense
-                ? "bg-red-500/10 text-red-500"
-                : "bg-emerald-500/10 text-emerald-500",
+                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
             )}
           >
-            {trans.categoryName?.charAt(0).toUpperCase()}
+            {getCategoryIcon(trans.categoryName)}
           </div>
 
           <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -152,7 +185,7 @@ export function TransactionCard({
           </div>
 
           {/* DÀN NÚT BẤM: Tinh chỉnh lại để không bao giờ bị lệch */}
-          <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-500 bg-muted/5 sm:bg-transparent p-1 sm:p-0 rounded-xl">
+          <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-500">
             {isProfileLoading ? (
               <Loader2
                 size={14}
@@ -160,8 +193,7 @@ export function TransactionCard({
               />
             ) : (
               isOwner && (
-                <div className="flex items-center gap-1">
-                  {/* Group các nút lại để đảm bảo chúng đi cùng nhau */}
+                <div className="flex items-center gap-2">
                   {!isTrash ? (
                     <>
                       <input
@@ -171,59 +203,72 @@ export function TransactionCard({
                         accept="image/*"
                         onChange={handleFileChange}
                       />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-primary/10 hover:text-primary"
-                      >
-                        <ImagePlus size={14} strokeWidth={2.5} />
-                      </Button>
-                      <Link href={`/transactions/${trans.id}/logs`}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-primary/10 hover:text-primary"
-                        >
-                          <History size={14} strokeWidth={2.5} />
-                        </Button>
-                      </Link>
+                      
+                      {/* NÚT SỬA LÀ NÚT CHÍNH */}
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onEdit && onEdit(trans)}
-                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-primary/10 hover:text-primary"
+                        className="w-9 h-9 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
                       >
-                        <Settings2 size={14} strokeWidth={2.5} />
+                        <Settings2 size={16} strokeWidth={2.5} />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete && onDelete(trans)}
-                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <Trash2 size={14} strokeWidth={2.5} />
-                      </Button>
+
+                      {/* MENU CÁC TÁC VỤ KHÁC */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-9 h-9 rounded-xl bg-muted/20 hover:bg-muted text-muted-foreground transition-all"
+                          >
+                            <MoreVertical size={16} strokeWidth={2.5} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-2xl border-border/40 backdrop-blur-xl">
+                          <DropdownMenuItem 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 text-xs font-bold uppercase tracking-tight"
+                          >
+                            <ImagePlus size={14} className="text-primary" /> Đính kèm hóa đơn
+                          </DropdownMenuItem>
+                          
+                          <Link href={`/transactions/${trans.id}/logs`}>
+                            <DropdownMenuItem className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 text-xs font-bold uppercase tracking-tight">
+                              <History size={14} className="text-primary" /> Lịch sử thay đổi
+                            </DropdownMenuItem>
+                          </Link>
+
+                          <DropdownMenuSeparator className="my-1 bg-border/40" />
+                          
+                          <DropdownMenuItem 
+                            onClick={() => onDelete && onDelete(trans)}
+                            className="flex items-center gap-3 p-3 rounded-xl cursor-pointer text-destructive hover:bg-destructive/5 text-xs font-bold uppercase tracking-tight"
+                          >
+                            <Trash2 size={14} /> Chuyển vào thùng rác
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </>
                   ) : (
-                    <>
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onRestore && onRestore(trans)}
-                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-emerald-500/10 hover:text-emerald-500"
+                        className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
                       >
-                        <RotateCcw size={14} strokeWidth={2.5} />
+                        <RotateCcw size={16} strokeWidth={2.5} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onForceDelete && onForceDelete(trans)}
-                        className="w-8 h-8 rounded-lg bg-muted/20 hover:bg-destructive/10 hover:text-destructive"
+                        className="w-9 h-9 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-all shadow-sm"
                       >
-                        <Trash2 size={14} strokeWidth={2.5} />
+                        <Trash2 size={16} strokeWidth={2.5} />
                       </Button>
-                    </>
+                    </div>
                   )}
                 </div>
               )

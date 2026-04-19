@@ -20,10 +20,30 @@ export interface TransactionRequest {
   amount: number;
   note: string;
   date: string;
+  receiptUrl?: string;
 }
 
 export interface OCRResponse {
-  amount: number;
+  totalAmount: number;
   suggestedNote: string;
   receiptUrl: string;
+  items: OCRItem[];
+}
+
+export interface OCRItem {
+  name: string;
+  amount: number;
+  categorySuggestion: string;
+}
+
+export interface BulkTransactionRequest {
+  walletId: string;
+  groupId?: string;
+  date: string;
+  receiptUrl: string;
+  items: {
+    categoryId: string;
+    amount: number;
+    note: string;
+  }[];
 }

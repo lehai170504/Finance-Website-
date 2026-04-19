@@ -158,6 +158,19 @@ export const useTransactions = (
     createTransaction: createMutation,
     uploadReceipt: uploadReceiptMutation,
 
+    // Mutation tạo hàng loạt (Split Bill)
+    bulkCreate: useMutation({
+      mutationFn: (data: any) => transactionService.bulkCreate(data),
+      onSuccess: () => {
+        toast.success("Đã ghi chép tất cả các món hàng!");
+        queryClient.invalidateQueries({ queryKey: ["transactions"] });
+        queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      },
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Không thể tách hóa đơn");
+      },
+    }),
+
     // Hàm gọi lại API nếu cần
     refetch: listQuery.refetch,
   };

@@ -27,6 +27,7 @@ import {
   Loader2,
   Sparkles,
   PencilLine,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +54,7 @@ export function EditTransactionModal({
   const [date, setDate] = useState("");
   const [walletId, setWalletId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [receiptUrl, setReceiptUrl] = useState("");
 
   useEffect(() => {
     if (transaction && isOpen) {
@@ -69,6 +71,8 @@ export function EditTransactionModal({
         (c: any) => c.name === transaction.categoryName,
       );
       if (matchedCategory) setCategoryId(matchedCategory.id);
+      
+      setReceiptUrl(transaction.receiptUrl || "");
     }
   }, [transaction, isOpen, wallets, categories]);
 
@@ -79,7 +83,7 @@ export function EditTransactionModal({
       id: transaction.id,
       newWalletId: walletId,
       categoryId: categoryId,
-      data: { amount: Number(amount), note, date },
+      data: { amount: Number(amount), note, date, receiptUrl: receiptUrl || undefined },
     });
   };
 
@@ -164,6 +168,30 @@ export function EditTransactionModal({
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
+
+          {/* HIỂN THỊ BILL HIỆN TẠI (NẾU CÓ) */}
+          {receiptUrl && (
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 ml-1 flex items-center gap-2">
+                <PencilLine size={12} className="text-primary" /> Hóa đơn đính kèm
+              </label>
+              <div className="relative w-24 h-24 group/bill">
+                <img 
+                  src={receiptUrl} 
+                  alt="Current receipt" 
+                  className="w-full h-full rounded-2xl object-cover border-2 border-border/50 shadow-md cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => window.open(receiptUrl, '_blank')}
+                />
+                <button 
+                  type="button"
+                  onClick={() => setReceiptUrl("")}
+                  className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover/bill:opacity-100 transition-opacity"
+                >
+                  <X size={10} strokeWidth={4} />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* CHỌN VÍ & DANH MỤC */}
           <div className="grid grid-cols-2 gap-4">

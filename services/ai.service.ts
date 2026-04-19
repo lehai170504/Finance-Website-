@@ -6,19 +6,14 @@ export interface AiAdviceResponse {
 }
 
 export const aiService = {
-  getFinancialAdvice: async (): Promise<ApiResponse<AiAdviceResponse>> => {
-    const response = await axiosInstance.get<ApiResponse<AiAdviceResponse>>("/ai/financial-advice", {
-      headers: {
-        "X-User-ID": "d9e74471-a2e3-4c06-a05d-60c1344f13b4"
-      }
-    });
+  getFinancialAdvice: async (): Promise<ApiResponse<string>> => {
+    const response = await axiosInstance.get<ApiResponse<string>>("/ai/advice");
     return response.data;
   },
-  chat: async (message: string): Promise<ApiResponse<{ response: string }>> => {
-    const response = await axiosInstance.post<ApiResponse<{ response: string }>>("/ai/chat", { message }, {
-      headers: {
-        "X-User-ID": "d9e74471-a2e3-4c06-a05d-60c1344f13b4"
-      }
+  chat: async (message: string, history?: any[]): Promise<ApiResponse<string>> => {
+    const response = await axiosInstance.post<ApiResponse<string>>("/ai/chat", { 
+      message, 
+      history 
     });
     return response.data;
   },

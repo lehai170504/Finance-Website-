@@ -49,11 +49,34 @@ export default function ReportsPage() {
       .split("T")[0],
   );
 
+  const [activeTab, setActiveTab] = useState<"EXPENSE" | "INCOME">("EXPENSE");
+  const [isBudgetOpen, setIsBudgetOpen] = useState(false);
+
+  // Hàm chọn nhanh ngày
+  const setQuickDate = (type: "THIS_MONTH" | "LAST_MONTH" | "THIS_YEAR") => {
+    const now = new Date();
+    let start, end;
+    if (type === "THIS_MONTH") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    } else if (type === "LAST_MONTH") {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
+    } else {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear(), 11, 31);
+    }
+    setStartDate(start.toISOString().split("T")[0]);
+    setEndDate(end.toISOString().split("T")[0]);
+  };
+
   const { stats, isLoadingStats, downloadExcel } = useReports(
     startDate,
     endDate,
   );
-  const [isBudgetOpen, setIsBudgetOpen] = useState(false);
+
+  // Lọc stats theo Tab
+  const filteredStats = stats.filter((s: any) => s.categoryType === activeTab);
 
   // Tính toán dữ liệu tổng quát
   const totalIncome = stats
@@ -126,57 +149,85 @@ export default function ReportsPage() {
           title="Tổng Thu Nhập"
           amount={totalIncome}
           icon={<ArrowUpCircle size={32} className="text-emerald-500" />}
-          className="bg-emerald-500/[0.03] border-emerald-500/20"
+          className="bg-emerald-500/[0.03] border-emerald-500/20 shadow-[0_20px_40px_-15px_rgba(16,185,129,0.1)]"
         />
         <SummaryCard
           title="Tổng Chi Tiêu"
           amount={totalExpense}
-          icon={<ArrowDownCircle size={32} className="text-destructive" />}
-          className="bg-destructive/[0.03] border-destructive/20"
+          icon={<ArrowDownCircle size={32} className="text-rose-500" />}
+          className="bg-rose-500/[0.03] border-rose-500/20 shadow-[0_20px_40px_-15px_rgba(244,63,94,0.1)]"
         />
         <SummaryCard
           title="Số dư ròng"
           amount={totalIncome - totalExpense}
           icon={<Wallet size={32} className="text-primary" />}
-          className="bg-primary/[0.03] border-primary/20"
+          className="bg-primary/[0.03] border-primary/20 shadow-[0_20px_40px_-15px_rgba(59,130,246,0.1)]"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* LEFT COLUMN: CHI TIẾT CƠ CẤU */}
         <div className="lg:col-span-8 space-y-8">
-          <div className="p-8 border-2 border-border/40 rounded-[3rem] bg-card shadow-sm relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12 relative z-10">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-2xl text-primary border border-primary/20 shadow-inner">
-                  <PieChart size={24} strokeWidth={3} />
+          <div className="p-8 md:p-12 border-2 border-border/40 rounded-[3.5rem] bg-card shadow-2xl shadow-black/5 relative overflow-hidden">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 mb-16 relative z-10">
+              <div className="flex items-center gap-5">
+                <div className="p-4 bg-primary text-white rounded-2xl shadow-xl shadow-primary/20">
+                  <PieChart size={28} strokeWidth={3} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
+                  <h2 className="text-3xl font-black uppercase tracking-tight text-foreground">
                     Cơ cấu dòng tiền
                   </h2>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
-                    Phân bổ theo hạng mục
-                  </p>
+                  <div className="flex gap-4 mt-2">
+                    <button 
+                      onClick={() => setActiveTab("EXPENSE")}
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-widest pb-1 border-b-2 transition-all",
+                        activeTab === "EXPENSE" ? "border-rose-500 text-rose-500" : "border-transparent text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      Chi tiêu
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab("INCOME")}
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-widest pb-1 border-b-2 transition-all",
+                        activeTab === "INCOME" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      Thu nhập
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* FILTER NGÀY - PREMIUM DESIGN */}
-              <div className="flex items-center gap-3 bg-muted/40 p-2 rounded-2xl border border-border/50 backdrop-blur-md w-full sm:w-auto shadow-inner">
-                <DatePickerInput
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="h-10 text-[11px] font-money font-bold border-none bg-background shadow-sm rounded-xl focus-visible:ring-primary/20 transition-all"
-                />
-                <ChevronRight
-                  size={16}
-                  className="text-muted-foreground/40 shrink-0"
-                />
-                <DatePickerInput
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="h-10 text-[11px] font-money font-bold border-none bg-background shadow-sm rounded-xl focus-visible:ring-primary/20 transition-all"
-                />
+              <div className="flex flex-col gap-3 w-full xl:w-auto">
+                {/* QUICK FILTERS */}
+                <div className="flex gap-2">
+                  {["THIS_MONTH", "LAST_MONTH", "THIS_YEAR"].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setQuickDate(t as any)}
+                      className="px-3 py-1.5 rounded-lg bg-muted/50 text-[9px] font-black uppercase tracking-wider hover:bg-primary hover:text-white transition-all"
+                    >
+                      {t === "THIS_MONTH" ? "Tháng này" : t === "LAST_MONTH" ? "Tháng trước" : "Năm nay"}
+                    </button>
+                  ))}
+                </div>
+                {/* DATE RANGE */}
+                <div className="flex items-center gap-3 bg-muted/40 p-2 rounded-2xl border border-border/50 backdrop-blur-md shadow-inner">
+                  <DatePickerInput
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="h-10 text-[11px] font-money font-bold border-none bg-background shadow-sm rounded-xl"
+                  />
+                  <ChevronRight size={16} className="text-muted-foreground/30" />
+                  <DatePickerInput
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="h-10 text-[11px] font-money font-bold border-none bg-background shadow-sm rounded-xl"
+                  />
+                </div>
               </div>
             </div>
 
@@ -195,15 +246,18 @@ export default function ReportsPage() {
                   Đang xử lý dữ liệu...
                 </span>
               </div>
-            ) : stats.length === 0 ? (
-              <div className="py-32 text-center border-2 border-dashed rounded-[2.5rem] border-border/40 bg-muted/10">
-                <p className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">
-                  Không có dữ liệu trong khoảng này
+            ) : filteredStats.length === 0 ? (
+              <div className="py-32 text-center border-2 border-dashed rounded-[3rem] border-border/40 bg-muted/5 flex flex-col items-center gap-4">
+                <div className="p-4 bg-muted/20 rounded-full">
+                   <CalendarDays size={32} className="text-muted-foreground/30" />
+                </div>
+                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-50">
+                  Không có dữ liệu {activeTab === "EXPENSE" ? "chi tiêu" : "thu nhập"}
                 </p>
               </div>
             ) : (
-              <div className="space-y-10 relative z-10 px-2">
-                {stats.map((item: any, index: number) => {
+              <div className="space-y-12 relative z-10 px-2">
+                {filteredStats.map((item: any, index: number) => {
                   const isExpense = item.categoryType === "EXPENSE";
                   const baseAmount = isExpense ? totalExpense : totalIncome;
                   const percent =
@@ -215,60 +269,53 @@ export default function ReportsPage() {
                       className="group cursor-default animate-in fade-in slide-in-from-left-4 duration-500"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <div className="flex justify-between items-end mb-4">
-                        <div className="flex items-center gap-4">
+                      <div className="flex justify-between items-end mb-5">
+                        <div className="flex items-center gap-5">
                           <div
                             className={cn(
-                              "w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-lg font-black shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 border-2 border-background",
+                              "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 border-2 border-background",
                               isExpense
-                                ? "bg-red-500/10 text-red-500"
-                                : "bg-emerald-500/10 text-emerald-500",
+                                ? "bg-rose-500 text-white shadow-rose-500/20"
+                                : "bg-emerald-500 text-white shadow-emerald-500/20",
                             )}
                           >
                             {item.categoryName.charAt(0).toUpperCase()}
                           </div>
-                          <div className="flex flex-col leading-tight">
-                            <span className="text-base font-black uppercase tracking-tight text-foreground/90">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-lg font-black uppercase tracking-tight text-foreground/90 group-hover:text-primary transition-colors">
                               {item.categoryName}
                             </span>
-                            <span
-                              className={cn(
-                                "text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md w-fit mt-1",
-                                isExpense
-                                  ? "bg-red-500/5 text-red-500/70"
-                                  : "bg-emerald-500/5 text-emerald-500/70",
-                              )}
-                            >
-                              {isExpense ? "Chi tiêu" : "Thu nhập"}
-                            </span>
+                            <div className="flex items-center gap-2">
+                               <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isExpense ? "bg-rose-500" : "bg-emerald-500")} />
+                               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                                 {percent.toFixed(1)}% Tổng {isExpense ? "Chi" : "Thu"}
+                               </span>
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
                           <span
                             className={cn(
-                              "text-xl font-black block leading-none tracking-tighter font-money",
+                              "text-2xl font-black block leading-none tracking-tighter font-money",
                               isExpense
-                                ? "text-destructive"
+                                ? "text-rose-600"
                                 : "text-emerald-600",
                             )}
                           >
                             {isExpense ? "-" : "+"}
                             {item.totalAmount.toLocaleString()}đ
                           </span>
-                          <span className="text-[10px] font-money font-bold text-muted-foreground/60 uppercase mt-1.5 inline-block">
-                            Tỷ trọng: {percent.toFixed(1)}%
-                          </span>
                         </div>
                       </div>
 
-                      {/* PROGRESS BAR - HIGH CONTRAST */}
-                      <div className="w-full h-3 bg-muted/50 rounded-full overflow-hidden border border-border/20 shadow-inner">
+                      {/* PROGRESS BAR - PREMIUM GRADIENT */}
+                      <div className="w-full h-4 bg-muted/50 rounded-full overflow-hidden p-1 border border-border/20 shadow-inner">
                         <div
                           className={cn(
-                            "h-full rounded-full transition-all duration-1000 ease-in-out shadow-[0_0_12px] group-hover:brightness-110",
+                            "h-full rounded-full transition-all duration-1000 ease-out shadow-lg group-hover:brightness-110",
                             isExpense
-                              ? "bg-gradient-to-r from-red-500 via-rose-500 to-orange-400 shadow-red-500/20"
-                              : "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-400 shadow-emerald-500/20",
+                              ? "bg-gradient-to-r from-rose-600 via-pink-500 to-rose-400"
+                              : "bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400",
                           )}
                           style={{ width: `${percent}%` }}
                         />

@@ -456,7 +456,7 @@ export default function DashboardPage() {
                       <span className="text-[10px] font-black uppercase tracking-widest text-primary">Cố vấn AI nói rằng:</span>
                    </div>
                    <p className="text-[12px] font-bold text-muted-foreground/70 leading-relaxed italic line-clamp-4 group-hover/advice:line-clamp-none transition-all duration-500">
-                      {aiAdvice?.data?.advice || "Đang kết nối với bộ não trung tâm để đưa ra lời khuyên phù hợp nhất cho homie..."}
+                      {aiAdvice?.data || "Đang kết nối với bộ não trung tâm để đưa ra lời khuyên phù hợp nhất cho homie..."}
                    </p>
                 </div>
              </div>

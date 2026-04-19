@@ -34,7 +34,11 @@ export function AiAdvisorCard() {
     return badges;
   };
 
-  const badges = getBadges(data?.data?.advice);
+  const adviceText: string = typeof data?.data === 'string' 
+    ? data.data 
+    : (data?.data as any)?.advice || "";
+
+  const badges = getBadges(adviceText);
 
   return (
     <div className="lg:col-span-3 p-8 md:p-12 border-2 border-primary/20 rounded-[3rem] bg-gradient-to-br from-primary/5 via-background to-blue-500/5 shadow-2xl shadow-primary/10 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-10 duration-1000">
@@ -77,8 +81,9 @@ export function AiAdvisorCard() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  {/* 🔥 FIX Ở ĐÂY: DÙNG BIẾN adviceText VỪA TẠO */}
                   <p className="text-lg md:text-xl font-medium leading-relaxed text-foreground/90 whitespace-pre-line italic">
-                    {data?.data?.advice}
+                    {adviceText}
                   </p>
                   
                   {/* Badges linh hoạt */}

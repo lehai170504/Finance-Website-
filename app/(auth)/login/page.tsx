@@ -34,7 +34,6 @@ export default function LoginPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [requires2FA, setRequires2FA] = useState(false);
-  const [tempToken, setTempToken] = useState("");
   const [otpCode, setOtpCode] = useState("");
 
   const {
@@ -46,27 +45,21 @@ export default function LoginPage() {
     defaultValues: { loginId: "", password: "" },
   });
 
-  // Khôi phục trạng thái khi user lỡ tay F5
   useEffect(() => {
     const isWaiting = Cookies.get("temp_2fa_valid");
     const savedToken = localStorage.getItem("temp_2fa_token");
     if (isWaiting && savedToken) {
       setRequires2FA(true);
-      setTempToken(savedToken);
     }
   }, []);
 
   const onSubmit = async (data: LoginFormValues) => {
     const result = await login(data);
 
-    // Nếu dính 2FA, chuyển sang form OTP và DỪNG LẠI NGAY
-    if (result?.requires2FA && result.tempToken) {
-      localStorage.setItem("temp_2fa_token", result.tempToken);
+    if (result?.requires2FA) {
       setRequires2FA(true);
-      setTempToken(result.tempToken);
       setOtpCode("");
-      toast.info("Vui lòng nhập mã OTP!");
-      return;
+      toast.info("Tài khoản của homie đang được bảo vệ bởi 2FA. Nhập mã ngay!");
     }
   };
 
@@ -74,14 +67,10 @@ export default function LoginPage() {
     if (credentialResponse.credential) {
       const result = await googleLogin(credentialResponse.credential);
 
-      // Chặn tương tự cho Google Login
-      if (result?.requires2FA && result.tempToken) {
-        localStorage.setItem("temp_2fa_token", result.tempToken);
+      if (result?.requires2FA) {
         setRequires2FA(true);
-        setTempToken(result.tempToken);
         setOtpCode("");
-        toast.info("Tài khoản Google yêu cầu xác minh 2 lớp!");
-        return;
+        toast.info("Tài khoản Google này yêu cầu xác minh 2 lớp!");
       }
     }
   };
@@ -93,19 +82,15 @@ export default function LoginPage() {
       return;
     }
 
-    const success = await verify2FA({ tempToken, code: parseInt(otpCode) });
+    const success = await verify2FA(parseInt(otpCode));
 
-    if (success) {
-      localStorage.removeItem("temp_2fa_token");
-      Cookies.remove("temp_2fa_valid");
-    } else {
-      setOtpCode(""); // Nhập sai thì clear để nhập lại mã mới
+    if (!success) {
+      setOtpCode("");
     }
   };
 
   const handleBackToLogin = () => {
     setRequires2FA(false);
-    setTempToken("");
     setOtpCode("");
     Cookies.remove("temp_2fa_valid");
     localStorage.removeItem("temp_2fa_token");
@@ -113,7 +98,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col w-full max-w-sm mx-auto font-sans animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* HEADER SECTION */}
+      {/* LOGO & TITLE */}
       <div className="flex flex-col items-center space-y-6 text-center mb-10">
         <Link
           href="/"
@@ -154,8 +139,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ERROR MESSAGE (Global) */}
-      {apiError && typeof apiError === "string" && (
+      {/* ERROR MESSAGE */}
+      {apiError && (
         <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive text-[11px] rounded-2xl font-black uppercase tracking-widest text-center animate-in zoom-in-95">
           ⚠️ {apiError}
         </div>
@@ -163,9 +148,6 @@ export default function LoginPage() {
 
       {/* RENDER DỰA TRÊN TRẠNG THÁI 2FA */}
       {requires2FA ? (
-        /* ========================================================= */
-        /* GIAO DIỆN NHẬP MÃ 2FA                                     */
-        /* ========================================================= */
         <form
           onSubmit={onVerify2FA}
           className="flex flex-col space-y-6 animate-in slide-in-from-right-4 duration-500"
@@ -173,7 +155,7 @@ export default function LoginPage() {
           <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center gap-3">
             <ShieldCheck className="text-amber-500 shrink-0" size={20} />
             <span className="text-[11px] font-bold text-amber-600 uppercase tracking-tight leading-tight">
-              Vui lòng nhập mã 2FA từ ứng dụng Google Authenticator!
+              Mã bảo mật đang đợi homie trong Google Authenticator!
             </span>
           </div>
 
@@ -188,7 +170,7 @@ export default function LoginPage() {
               disabled={isLoading}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
               placeholder="000000"
-              className="h-14 px-5 text-center text-2xl tracking-[0.5em] rounded-2xl border-2 transition-all font-bold focus:bg-background border-border/60 bg-muted/20 focus:border-primary/50"
+              className="h-16 px-5 text-center text-3xl tracking-[0.4em] rounded-2xl border-2 transition-all font-black focus:bg-background border-border/60 bg-muted/20 focus:border-primary/50"
               autoFocus
             />
           </div>
@@ -196,9 +178,13 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={isLoading || otpCode.length !== 6}
-            className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em]"
+            className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20"
           >
-            {isLoading ? <Loader2 className="animate-spin" /> : "Xác nhận ngay"}
+            {isLoading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Xác nhận & Vào app"
+            )}
           </Button>
 
           <button
@@ -210,9 +196,6 @@ export default function LoginPage() {
           </button>
         </form>
       ) : (
-        /* ========================================================= */
-        /* GIAO DIỆN ĐĂNG NHẬP THÔNG THƯỜNG                           */
-        /* ========================================================= */
         <>
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -288,7 +271,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em]"
+              className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/10"
             >
               {isLoading ? (
                 <Loader2 className="animate-spin" />

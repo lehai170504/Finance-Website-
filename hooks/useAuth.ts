@@ -1,11 +1,10 @@
-// hooks/useAuth.ts
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { authService } from "@/services/auth.service";
-import { LoginPayload, RegisterPayload, Verify2FaPayload } from "@/types/auth";
+import { LoginPayload, RegisterPayload, AuthResponse } from "@/types/auth";
 
 export const useAuth = () => {
   const router = useRouter();
@@ -13,14 +12,14 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // --- HÀM XỬ LÝ CHUNG KHI AUTH THÀNH CÔNG ---
+  // --- HÀM XỬ LÝ KHI ĐĂNG NHẬP THÀNH CÔNG ---
   const handleAuthSuccess = useCallback(
     async (accessToken: string, refreshToken: string) => {
-      // 1. Dọn dẹp trạng thái chờ 2FA ngay lập tức
+      // Dọn dẹp các trạng thái tạm thời của 2FA
       Cookies.remove("temp_2fa_valid", { path: "/" });
       localStorage.removeItem("temp_2fa_token");
 
-      // 2. Thiết lập Token chính thức
+      // Thiết lập Cookies chính thức
       Cookies.set("access_token", accessToken, {
         expires: 7,
         path: "/",
@@ -32,57 +31,48 @@ export const useAuth = () => {
         sameSite: "lax",
       });
 
-      // 3. Sync login giữa các tab
+      // Đồng bộ giữa các tab và cập nhật lại thông tin user
       localStorage.setItem("auth_sync", "login_" + Date.now());
-
-      // 4. Ép React Query fetch lại data user mới nhất
       await queryClient.invalidateQueries({ queryKey: ["user_profile"] });
 
-      // 5. Chuyển trang
       router.push("/dashboard");
     },
     [router, queryClient],
   );
 
-  // Trong hooks/useAuth.ts
-
-  // --- LOGIN EMAIL HOẶC USERNAME ---
+  // --- LOGIN EMAIL/USERNAME ---
   const login = async (payload: LoginPayload) => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await authService.login(payload);
+      const data = res.data as AuthResponse;
 
-      if (res.status === 200 && res.data) {
-        const needs2FA =
-          !!res.data.tempToken ||
-          res.data.is2faRequired ||
-          (res.data as any)["2faRequired"];
-
-        if (needs2FA) {
+      if (data) {
+        // Kiểm tra xem có yêu cầu 2FA không
+        if (data.is2faRequired || data.tempToken) {
           Cookies.set("temp_2fa_valid", "true", {
             expires: 1 / 144,
             path: "/",
-            sameSite: "lax",
           });
-
+          localStorage.setItem("temp_2fa_token", data.tempToken || "");
           setIsLoading(false);
-          return { requires2FA: true, tempToken: res.data.tempToken };
+          return { requires2FA: true, tempToken: data.tempToken };
         }
 
-        if (res.data.accessToken) {
-          await handleAuthSuccess(res.data.accessToken, res.data.refreshToken);
+        // Nếu login thẳng (không 2FA)
+        if (data.accessToken && data.refreshToken) {
+          await handleAuthSuccess(data.accessToken, data.refreshToken);
           toast.success("Chào mừng homie trở lại!");
           return { requires2FA: false };
         }
       }
-
-      setError(res.message || "Sai thông tin đăng nhập.");
       return null;
     } catch (err: any) {
       const msg =
-        err.response?.data?.message || "Thông tin đăng nhập không hợp lệ.";
+        err.response?.data?.message || "Sai thông tin đăng nhập rồi homie.";
       setError(msg);
+      toast.error(msg);
       return null;
     } finally {
       setIsLoading(false);
@@ -95,26 +85,24 @@ export const useAuth = () => {
     setError(null);
     try {
       const res = await authService.googleLogin(idToken);
+      const data = res.data as AuthResponse;
 
-      if (res.status === 200 && res.data) {
-        const needs2FA =
-          !!res.data.tempToken ||
-          res.data.is2faRequired ||
-          (res.data as any)["2faRequired"];
-
-        if (needs2FA) {
+      if (data) {
+        if (data.is2faRequired || data.tempToken) {
           Cookies.set("temp_2fa_valid", "true", {
             expires: 1 / 144,
             path: "/",
-            sameSite: "lax",
           });
+          localStorage.setItem("temp_2fa_token", data.tempToken || "");
           setIsLoading(false);
-          return { requires2FA: true, tempToken: res.data.tempToken };
+          return { requires2FA: true, tempToken: data.tempToken };
         }
 
-        await handleAuthSuccess(res.data.accessToken, res.data.refreshToken);
-        toast.success("Đăng nhập Google thành công!");
-        return { requires2FA: false };
+        if (data.accessToken && data.refreshToken) {
+          await handleAuthSuccess(data.accessToken, data.refreshToken);
+          toast.success("Đăng nhập Google thành công!");
+          return { requires2FA: false };
+        }
       }
       return null;
     } catch (err: any) {
@@ -125,28 +113,38 @@ export const useAuth = () => {
     }
   };
 
-  // --- VERIFY 2FA (Đổi Token tạm lấy Token thật) ---
-  const verify2FA = async (payload: Verify2FaPayload) => {
+  // --- XÁC THỰC 2FA ---
+  const verify2FA = async (code: number) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await authService.verify2FA(payload);
-      if (res.status === 200 && res.data?.accessToken) {
-        await handleAuthSuccess(res.data.accessToken, res.data.refreshToken);
+      const tempToken = localStorage.getItem("temp_2fa_token");
+      if (!tempToken) {
+        toast.error("Phiên làm việc hết hạn, đăng nhập lại nhé!");
+        return false;
+      }
+
+      const res = await authService.verify2FA({ tempToken, code });
+      const data = res.data as AuthResponse;
+
+      if (data?.accessToken && data?.refreshToken) {
+        await handleAuthSuccess(data.accessToken, data.refreshToken);
         toast.success("Xác thực 2FA thành công!");
         return true;
       }
       return false;
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Mã xác thực không chính xác.";
+      const msg =
+        err.response?.data?.message || "Mã OTP không đúng hoặc hết hạn.";
       setError(msg);
+      toast.error(msg);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- LOGOUT ---
+  // --- ĐĂNG XUẤT ---
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -154,46 +152,20 @@ export const useAuth = () => {
     } catch (err) {
       console.error("Logout API failed:", err);
     } finally {
+      // Xóa mọi dấu vết
       Cookies.remove("access_token", { path: "/" });
       Cookies.remove("refresh_token", { path: "/" });
       Cookies.remove("temp_2fa_valid", { path: "/" });
       localStorage.removeItem("temp_2fa_token");
+
       queryClient.clear();
       localStorage.setItem("auth_sync", "logout_" + Date.now());
+
       setIsLoading(false);
       router.push("/login");
-      toast.success("Đã đăng xuất.");
+      toast.success("Đã đăng xuất, hẹn gặp lại homie!");
     }
   }, [router, queryClient]);
-
-  // --- CÁC MUTATION PHỤ TRỢ ---
-  const uploadAvatar = useMutation({
-    mutationFn: (file: File) => authService.uploadAvatar(file),
-    onSuccess: (res) => {
-      toast.success("Cập nhật ảnh đại diện thành công!");
-      queryClient.invalidateQueries({ queryKey: ["user_profile"] });
-    },
-  });
-
-  const setup2FA = useMutation({
-    mutationFn: () => authService.setup2FA(),
-  });
-
-  const confirm2FA = useMutation({
-    mutationFn: (code: number) => authService.confirm2FA(code),
-    onSuccess: () => {
-      toast.success("Kích hoạt 2FA thành công!");
-      queryClient.invalidateQueries({ queryKey: ["user_profile"] });
-    },
-  });
-
-  const disable2FA = useMutation({
-    mutationFn: (password: string) => authService.disable2FA(password),
-    onSuccess: () => {
-      toast.success("Đã tắt 2FA.");
-      queryClient.invalidateQueries({ queryKey: ["user_profile"] });
-    },
-  });
 
   return {
     login,
@@ -202,20 +174,39 @@ export const useAuth = () => {
     logout,
     isLoading,
     error,
-    uploadAvatar,
-    setup2FA,
-    confirm2FA,
-    disable2FA,
+    uploadAvatar: useMutation({
+      mutationFn: (file: File) => authService.uploadAvatar(file),
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: ["user_profile"] }),
+    }),
+    setup2FA: useMutation({ mutationFn: () => authService.setup2FA() }),
+    confirm2FA: useMutation({
+      mutationFn: (code: number) => authService.confirm2FA(code),
+      onSuccess: () => {
+        toast.success("Đã kích hoạt 2FA thành công!");
+        queryClient.invalidateQueries({ queryKey: ["user_profile"] });
+      },
+    }),
+    disable2FA: useMutation({
+      mutationFn: (password: string) => authService.disable2FA(password),
+      onSuccess: () => {
+        toast.success("Đã tắt bảo mật 2FA.");
+        queryClient.invalidateQueries({ queryKey: ["user_profile"] });
+      },
+    }),
     register: async (payload: RegisterPayload) => {
       setIsLoading(true);
+      setError(null);
       try {
         const res = await authService.register(payload);
-        if (res.status === 201) {
-          toast.success("Đăng ký thành công!");
+        if (res.status === 201 || res.status === 200) {
+          toast.success("Đăng ký thành công! Đăng nhập thôi homie.");
           router.push("/login");
         }
       } catch (err: any) {
-        setError(err.response?.data?.message || "Đăng ký thất bại.");
+        const msg = err.response?.data?.message || "Đăng ký không thành công.";
+        setError(msg);
+        toast.error(msg);
       } finally {
         setIsLoading(false);
       }

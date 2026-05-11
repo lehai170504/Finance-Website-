@@ -19,7 +19,7 @@ export interface Transaction {
   note: string;
   date: string;
   categoryName: string;
-  categoryType: "INCOME" | "EXPENSE";
+  type: "INCOME" | "EXPENSE"; 
   receiptUrl?: string;
   walletName: string;
 }
@@ -39,7 +39,7 @@ export interface GroupStats {
 
 export interface GroupDebt {
   id: string;
-  debtorName: string; // Người mượn (Con nợ)
-  creditorName: string; // Người cho mượn (Chủ nợ)
+  debtorName: string; 
+  creditorName: string;
   amount: number;
 }

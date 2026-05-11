@@ -1,14 +1,13 @@
 // types/auth.ts
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string | null;
+  refreshToken?: string | null;
   tokenType?: string;
   username: string;
   is2faRequired?: boolean;
-  tempToken?: string;
+  tempToken?: string | null;
 }
-
 export interface ApiResponse<T> {
   status: number;
   message: string;
@@ -33,12 +32,13 @@ export interface UserProfile {
   role: string;
   avatarUrl?: string;
   is2faEnabled?: boolean;
+  lastLoginIp?: string | null;
 }
 
 export interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
-  confirmPassword: string;
+  confirmPassword?: string;
 }
 
 export interface Verify2FaPayload {

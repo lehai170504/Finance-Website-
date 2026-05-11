@@ -17,15 +17,14 @@ export const transactionService = {
     return response.data;
   },
 
-  getGroupTransactions: async (groupId: string, page = 0, size = 10) => {
-    const response = await axiosInstance.get<ApiResponse<TransactionResponse>>(
-      `/transactions/group/${groupId}`,
-      { params: { page, size } },
-    );
-    return response.data;
-  },
+ getGroupTransactions: async (groupId: string, page = 0, size = 10) => {
+  const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Transaction>>>( 
+    `/transactions/group/${groupId}`,
+    { params: { page, size } },
+  );
+  return response.data;
+},
 
-  //Lấy Tổng Thu Nhập
   getTotalIncome: async () => {
     const response = await axiosInstance.get<ApiResponse<number>>(
       "/transactions/total-income",
@@ -33,7 +32,6 @@ export const transactionService = {
     return response.data;
   },
 
-  //Lấy Tổng Chi Tiêu
   getTotalExpense: async () => {
     const response = await axiosInstance.get<ApiResponse<number>>(
       "/transactions/total-expense",
@@ -41,7 +39,6 @@ export const transactionService = {
     return response.data;
   },
 
-  //Lấy danh sách Thùng rác (Chưa xóa vĩnh viễn)
   getTrash: async () => {
     const response = await axiosInstance.get<ApiResponse<Transaction[]>>(
       "/transactions/trash",
@@ -49,7 +46,6 @@ export const transactionService = {
     return response.data;
   },
 
-  //Tìm kiếm giao dịch
   searchTransactions: async (
     keyword: string,
     page: number = 0,
@@ -61,7 +57,6 @@ export const transactionService = {
     return response.data;
   },
 
-  //Lọc giao dịch theo Thu/Chi
   filterTransactions: async (type: "INCOME" | "EXPENSE") => {
     const response = await axiosInstance.get<ApiResponse<Transaction[]>>(
       "/transactions/filter",
@@ -70,22 +65,18 @@ export const transactionService = {
     return response.data;
   },
 
-  // Sửa giao dịch
+  // FIX 1: UPDATE TRANSACTION
   updateTransaction: async (
     id: string,
-    newWalletId: string,
-    categoryId: string,
-    data: { amount: number; note: string; date: string },
+    data: TransactionRequest, 
   ) => {
     const response = await axiosInstance.put<ApiResponse<any>>(
       `/transactions/${id}`,
-      data,
-      { params: { newWalletId, categoryId } },
+      data 
     );
     return response.data;
   },
 
-  // Xóa giao dịch (Vào thùng rác)
   deleteTransaction: async (id: string) => {
     const response = await axiosInstance.delete<ApiResponse<any>>(
       `/transactions/${id}`,
@@ -93,7 +84,6 @@ export const transactionService = {
     return response.data;
   },
 
-  // Phục hồi giao dịch từ thùng rác
   restoreTransaction: async (id: string) => {
     const response = await axiosInstance.put<ApiResponse<any>>(
       `/transactions/${id}/restore`,
@@ -101,7 +91,6 @@ export const transactionService = {
     return response.data;
   },
 
-  // Xóa vĩnh viễn khỏi Database
   forceDeleteTransaction: async (id: string) => {
     const response = await axiosInstance.delete<ApiResponse<any>>(
       `/transactions/${id}/force`,
@@ -109,28 +98,15 @@ export const transactionService = {
     return response.data;
   },
 
-  // Tạo giao dịch mới
-  createTransaction: async (
-    walletId: string,
-    categoryId: string,
-    groupId: string | null,
-    data: TransactionRequest,
-  ) => {
+  // CREATE TRANSACTION
+  createTransaction: async (data: TransactionRequest) => {
     const response = await axiosInstance.post<ApiResponse<Transaction>>(
       "/transactions/create",
-      data,
-      {
-        params: {
-          walletId,
-          categoryId,
-          groupId: groupId || undefined,
-        },
-      },
+      data 
     );
     return response.data;
   },
 
-  // Upload ảnh hóa đơn
   uploadReceipt: async (transactionId: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);

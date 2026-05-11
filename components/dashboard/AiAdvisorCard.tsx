@@ -1,13 +1,13 @@
 "use client";
 
 import { useAi } from "@/hooks/useAi";
-import { 
-  Sparkles, 
-  BrainCircuit, 
-  Quote, 
-  RefreshCw, 
-  AlertCircle, 
-  TrendingUp, 
+import {
+  Sparkles,
+  BrainCircuit,
+  Quote,
+  RefreshCw,
+  AlertCircle,
+  TrendingUp,
   CheckCircle2,
   Lightbulb
 } from "lucide-react";
@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 export function AiAdvisorCard() {
   const { data, isLoading, refetch, isFetching, error } = useAi();
 
-  if (error) return null;
+  // if (error) return null; // Không ẩn nữa, để hiện thông báo lỗi
 
   // Hàm phát hiện "Mood" của AI để hiển thị Badge phù hợp
   const getBadges = (text: string = "") => {
@@ -34,8 +34,8 @@ export function AiAdvisorCard() {
     return badges;
   };
 
-  const adviceText: string = typeof data?.data === 'string' 
-    ? data.data 
+  const adviceText: string = typeof data?.data === 'string'
+    ? data.data
     : (data?.data as any)?.advice || "";
 
   const badges = getBadges(adviceText);
@@ -59,9 +59,9 @@ export function AiAdvisorCard() {
                 <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mt-1">Hỗ trợ bởi Homie Intelligence</p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => refetch()}
               disabled={isFetching || isLoading}
               className="rounded-full hover:bg-primary/10 text-primary font-black uppercase text-[9px] tracking-widest px-5 h-10 border border-primary/20 backdrop-blur-sm"
@@ -79,13 +79,23 @@ export function AiAdvisorCard() {
                   <div className="h-4 bg-primary/10 animate-pulse rounded-full w-full" />
                   <div className="h-4 bg-primary/10 animate-pulse rounded-full w-[60%]" />
                 </div>
+              ) : error ? (
+                <div className="space-y-4 p-6 border-2 border-dashed border-red-500/30 rounded-3xl bg-red-500/5 text-center w-full">
+                  <AlertCircle className="mx-auto text-red-500 mb-2" size={32} />
+                  <p className="text-sm font-bold text-red-600/80 uppercase tracking-wider">
+                    Homie ơi, Cố vấn AI đang bận hoặc chưa khởi động!
+                  </p>
+                  <p className="text-xs text-foreground/60 italic">
+                    Hãy kiểm tra server AI hoặc thử lại sau nhé.
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-6">
                   {/* 🔥 FIX Ở ĐÂY: DÙNG BIẾN adviceText VỪA TẠO */}
                   <p className="text-lg md:text-xl font-medium leading-relaxed text-foreground/90 whitespace-pre-line italic">
-                    {adviceText}
+                    {adviceText || "Đang chờ lời khuyên từ homie AI..."}
                   </p>
-                  
+
                   {/* Badges linh hoạt */}
                   <div className="flex flex-wrap gap-3 pt-2">
                     {badges.map((badge, idx) => (
@@ -103,13 +113,13 @@ export function AiAdvisorCard() {
         {/* AI Orbiting Graphic */}
         <div className="hidden xl:flex w-64 items-center justify-center">
           <div className="relative w-48 h-48">
-             <div className="absolute inset-0 bg-primary/20 rounded-full blur-[60px] animate-pulse" />
-             <div className="relative w-full h-full bg-background/80 backdrop-blur-md border-4 border-primary/30 rounded-full flex items-center justify-center shadow-2xl overflow-hidden group-hover:border-primary transition-colors duration-500">
-                <BrainCircuit size={80} className="text-primary group-hover:scale-110 transition-transform duration-700" strokeWidth={1.5} />
-                {/* Orbiting circles */}
-                <div className="absolute inset-2 border border-dashed border-primary/30 rounded-full animate-[spin_15s_linear_infinite]" />
-                <div className="absolute inset-6 border border-dotted border-primary/20 rounded-full animate-[spin_10s_linear_infinite_reverse]" />
-             </div>
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-[60px] animate-pulse" />
+            <div className="relative w-full h-full bg-background/80 backdrop-blur-md border-4 border-primary/30 rounded-full flex items-center justify-center shadow-2xl overflow-hidden group-hover:border-primary transition-colors duration-500">
+              <BrainCircuit size={80} className="text-primary group-hover:scale-110 transition-transform duration-700" strokeWidth={1.5} />
+              {/* Orbiting circles */}
+              <div className="absolute inset-2 border border-dashed border-primary/30 rounded-full animate-[spin_15s_linear_infinite]" />
+              <div className="absolute inset-6 border border-dotted border-primary/20 rounded-full animate-[spin_10s_linear_infinite_reverse]" />
+            </div>
           </div>
         </div>
       </div>

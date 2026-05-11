@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { transactionService } from "@/services/transaction.service";
-import { toast } from "sonner"; // Thêm import toast
+import { toast } from "sonner";
+import { TransactionRequest } from "@/types/transaction";
 
 // 1. Hook lấy giao dịch của Nhóm (Group)
 export const useGroupTransactions = (groupId: string, page = 0) => {
@@ -12,7 +13,7 @@ export const useGroupTransactions = (groupId: string, page = 0) => {
   });
 };
 
-// 2. Hook lấy giao dịch Cá nhân (Có hỗ trợ Phân trang, Tìm kiếm, Lọc)
+// 2. Hook lấy giao dịch Cá nhân
 export const useTransactions = (
   page: number = 0,
   size: number = 10,
@@ -45,34 +46,30 @@ export const useTransactions = (
     },
   });
 
-  // Lấy tổng thu
+  // Lấy tổng thu/chi/thùng rác
   const totalIncomeQuery = useQuery({
     queryKey: ["transactions", "total-income"],
     queryFn: transactionService.getTotalIncome,
   });
 
-  // Lấy tổng chi
   const totalExpenseQuery = useQuery({
     queryKey: ["transactions", "total-expense"],
     queryFn: transactionService.getTotalExpense,
   });
 
-  // Lấy thùng rác
   const trashQuery = useQuery({
     queryKey: ["transactions", "trash"],
     queryFn: transactionService.getTrash,
   });
 
-  // MUTATION SỬA GIAO DỊCH
   const updateMutation = useMutation({
-    mutationFn: ({ id, newWalletId, categoryId, data }: any) =>
-      transactionService.updateTransaction(id, newWalletId, categoryId, data),
+    mutationFn: ({ id, data }: { id: string; data: TransactionRequest }) =>
+      transactionService.updateTransaction(id, data),
     onSuccess: () => {
       toast.success("Cập nhật giao dịch thành công!");
-      // Fix lỗi chữ "QueryClient" thành "queryClient"
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["group_transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["total-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] }); 
     },
   });
 
@@ -82,8 +79,10 @@ export const useTransactions = (
     onSuccess: () => {
       toast.success("Đã chuyển giao dịch vào thùng rác!");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["group_transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["total-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.invalidateQueries({ queryKey: ["total-income"] });
+      queryClient.invalidateQueries({ queryKey: ["total-expense"] });
+      queryClient.invalidateQueries({ queryKey: ["trash"] });
     },
   });
 
@@ -93,8 +92,7 @@ export const useTransactions = (
     onSuccess: () => {
       toast.success("Đã khôi phục giao dịch thành công!");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["group_transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["total-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
       queryClient.invalidateQueries({ queryKey: ["total-income"] });
       queryClient.invalidateQueries({ queryKey: ["total-expense"] });
       queryClient.invalidateQueries({ queryKey: ["trash"] });
@@ -110,14 +108,15 @@ export const useTransactions = (
     },
   });
 
-  // Mutation tạo giao dịch
   const createMutation = useMutation({
-    mutationFn: ({ walletId, categoryId, groupId, data }: any) =>
-      transactionService.createTransaction(walletId, categoryId, groupId, data),
+    mutationFn: (data: TransactionRequest) =>
+      transactionService.createTransaction(data),
     onSuccess: () => {
       toast.success("Đã ghi chép giao dịch thành công!");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.invalidateQueries({ queryKey: ["total-income"] });
+      queryClient.invalidateQueries({ queryKey: ["total-expense"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Không thể tạo giao dịch");
@@ -131,7 +130,6 @@ export const useTransactions = (
     onSuccess: () => {
       toast.success("Đã tải hóa đơn thành công!");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["group_transactions"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Lỗi khi upload ảnh");
@@ -139,18 +137,14 @@ export const useTransactions = (
   });
 
   return {
-    // Data cho danh sách chính
     data: listQuery.data?.data,
     transactions: listQuery.data?.data?.content || [],
     isLoading: listQuery.isLoading,
-
-    // Data thống kê & thùng rác
     totalIncome: totalIncomeQuery.data?.data || 0,
     totalExpense: totalExpenseQuery.data?.data || 0,
     trash: trashQuery.data?.data || [],
     isTrashLoading: trashQuery.isLoading,
 
-    // Trả ra các hàm mutations để giao diện gọi
     updateTransaction: updateMutation,
     deleteTransaction: deleteMutation,
     restoreTransaction: restoreMutation,
@@ -158,7 +152,6 @@ export const useTransactions = (
     createTransaction: createMutation,
     uploadReceipt: uploadReceiptMutation,
 
-    // Mutation tạo hàng loạt (Split Bill)
     bulkCreate: useMutation({
       mutationFn: (data: any) => transactionService.bulkCreate(data),
       onSuccess: () => {
@@ -171,7 +164,6 @@ export const useTransactions = (
       },
     }),
 
-    // Hàm gọi lại API nếu cần
     refetch: listQuery.refetch,
   };
 };
@@ -196,21 +188,11 @@ export const useOCR = () => {
     },
     onError: (err: any) => {
       const status = err.response?.status;
-      const message = err.response?.data?.message;
-
-      if (status === 500) {
-        toast.error(
-          "File quá bự hoặc lỗi xử lý ảnh trên Server (500). Homie check lại log Backend nhé!",
-        );
-      } else if (status === 413) {
+      if (status === 413) {
         toast.error("Ảnh này quá nặng rồi! Kiếm cái nào dưới 2MB thôi.");
       } else {
-        toast.error(
-          message || "Không thể đọc hóa đơn này. Thử chụp rõ hơn xem sao!",
-        );
+        toast.error(err.response?.data?.message || "Không thể đọc hóa đơn này.");
       }
-
-      console.error("OCR Debug:", { status, message, error: err });
     },
   });
 };

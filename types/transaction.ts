@@ -4,7 +4,7 @@ export interface Transaction {
   note: string;
   date: string;
   categoryName: string;
-  categoryType: "INCOME" | "EXPENSE";
+  type: "INCOME" | "EXPENSE"; 
   receiptUrl: string | null;
   walletName: string;
 }
@@ -15,11 +15,13 @@ export interface PaginatedResponse<T> {
   totalPages: number;
   totalElements: number;
 }
-
 export interface TransactionRequest {
   amount: number;
   note: string;
   date: string;
+  walletId: string;   
+  categoryId: string;  
+  groupId?: string;   
   receiptUrl?: string;
 }
 

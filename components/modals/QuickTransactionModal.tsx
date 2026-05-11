@@ -132,20 +132,16 @@ export function QuickTransactionModal({
 
     createTransaction.mutate(
       {
+        amount: parseFloat(formData.amount),
+        note: formData.note,
+        date: formData.date,
         walletId: formData.walletId,
         categoryId: formData.categoryId,
         groupId: formData.spaceType === "GROUP" ? formData.groupId : undefined,
-        data: {
-          amount: parseFloat(formData.amount),
-          note: formData.note,
-          date: formData.date,
-          receiptUrl: formData.receiptUrl || undefined,
-        },
+        receiptUrl: formData.receiptUrl || undefined,
       },
       {
         onSuccess: () => {
-          toast.success("Ghi chép thành công! 🚀");
-
           if (formData.spaceType === "GROUP" && formData.groupId) {
             router.push(`/transactions?tab=GROUP&groupId=${formData.groupId}`);
           } else {
@@ -172,7 +168,6 @@ export function QuickTransactionModal({
         date: formData.date,
         receiptUrl: formData.receiptUrl,
         items: ocrItems.map(item => ({
-          // Tìm ID danh mục khớp nhất với gợi ý của AI
           categoryId: categories?.find(c => 
             c.name.toLowerCase().includes(item.categorySuggestion?.toLowerCase())
           )?.id || formData.categoryId || categories?.[0]?.id,

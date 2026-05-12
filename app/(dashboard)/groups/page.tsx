@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { GroupCard } from "@/components/cards/GroupCard";
-import { Plus, UserPlus, Users, Sparkles, Loader2, Search } from "lucide-react";
+import { Plus, UserPlus, Users, Loader2, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -51,8 +51,6 @@ export default function GroupsPage() {
   };
 
   const handleActionClick = (e: React.MouseEvent, id: string, isOwner: boolean) => {
-    e.preventDefault();
-    e.stopPropagation();
     setSelectedGroup({ id, isOwner });
     setConfirmOpen(true);
   };

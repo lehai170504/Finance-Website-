@@ -10,10 +10,8 @@ const withPWA = withPWAInit({
 
 // Cấu hình Next.js
 const nextConfig: NextConfig = {
-  output: "export", // Quan trọng: Xuất ra file static để Electron có thể đọc
-  trailingSlash: true, // Thêm dòng này để fix lỗi đường dẫn trên Electron
+  trailingSlash: true, // Thêm dòng này để fix lỗi đường dẫn
   images: {
-    unoptimized: true, // Bắt buộc khi dùng output export
     remotePatterns: [
       {
         protocol: "https",

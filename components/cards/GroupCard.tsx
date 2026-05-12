@@ -30,44 +30,42 @@ export function GroupCard({
 
   return (
     <div className="relative font-sans">
-      <Link href={`/groups/${group.id}`}>
-        <div className="group p-7 border-2 border-border/40 rounded-3xl bg-card hover:border-primary/40 transition-all duration-500 h-[280px] flex flex-col justify-between shadow-sm hover:shadow-2xl hover:-translate-y-1.5 relative overflow-hidden backdrop-blur-sm">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
+      <div className="group p-7 border-2 border-border/40 rounded-3xl bg-card hover:border-primary/40 transition-all duration-500 h-[280px] flex flex-col justify-between shadow-sm hover:shadow-2xl hover:-translate-y-1.5 relative overflow-hidden backdrop-blur-sm">
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
 
-          <div>
-            <div className="flex justify-between items-start mb-6 relative z-10">
-              <span className="font-money text-[10px] font-bold bg-primary/5 text-primary px-3 py-1.5 rounded-xl border border-primary/10 tracking-tight mt-1">
+        <div>
+          <div className="flex justify-between items-start mb-6 relative z-10">
+            <Link href={`/groups/${group.id}`} className="flex-1">
+              <span className="font-money text-[10px] font-bold bg-primary/5 text-primary px-3 py-1.5 rounded-xl border border-primary/10 tracking-tight mt-1 inline-block">
                 ID: {group.inviteCode}
               </span>
+            </Link>
 
-              <div className="flex items-center gap-1.5 relative z-20">
-                {isOwner && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onViewLogs();
-                    }}
-                    className="w-9 h-9 rounded-xl bg-muted/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all"
-                    title="Nhật ký nhóm"
-                  >
-                    <Activity size={16} />
-                  </Button>
-                )}
-
+            <div className="flex items-center gap-1.5 relative z-20">
+              {isOwner && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={(e) => onAction(e, group.id, isOwner)}
-                  className="w-9 h-9 rounded-xl bg-muted/40 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                  onClick={() => onViewLogs()}
+                  className="w-9 h-9 rounded-xl bg-muted/40 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all"
+                  title="Nhật ký nhóm"
                 >
-                  {isOwner ? <Trash2 size={16} /> : <LogOut size={16} />}
+                  <Activity size={16} />
                 </Button>
-              </div>
-            </div>
+              )}
 
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onAction({} as React.MouseEvent, group.id, isOwner)}
+                className="w-9 h-9 rounded-xl bg-muted/40 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+              >
+                {isOwner ? <Trash2 size={16} /> : <LogOut size={16} />}
+              </Button>
+            </div>
+          </div>
+
+          <Link href={`/groups/${group.id}`} className="block flex-1">
             <h3 className="text-2xl font-black uppercase leading-tight tracking-tighter group-hover:text-primary transition-colors line-clamp-2 pr-4 mt-2">
               {group.name}
             </h3>
@@ -78,48 +76,48 @@ export function GroupCard({
                 CHỦ: {isOwner ? "BẠN" : group.owner?.username}
               </p>
             </div>
-          </div>
-
-          <div className="mt-6 flex items-center justify-between relative z-10">
-            <div className="flex -space-x-2.5">
-              {group.members.slice(0, 4).map((m: any, i: number) => {
-                const isCurrentUser = m.email === userEmail;
-                const avatar = isCurrentUser ? userAvatar : m.avatarUrl;
-
-                return (
-                  <div
-                    key={i}
-                    className="relative w-10 h-10 rounded-xl bg-muted border-[3px] border-card flex items-center justify-center text-[11px] font-black uppercase shadow-sm group-hover:border-primary/10 transition-all overflow-hidden"
-                    title={m.username}
-                  >
-                    {avatar ? (
-                      <Image
-                        src={avatar}
-                        alt={m.username}
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    ) : (
-                      <span>{m.username.charAt(0)}</span>
-                    )}
-                  </div>
-                );
-              })}
-
-              {group.members.length > 4 && (
-                <div className="w-10 h-10 z-10 rounded-xl bg-primary text-primary-foreground border-[3px] border-card flex items-center justify-center text-[10px] font-black shadow-sm">
-                  +{group.members.length - 4}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5 font-black uppercase text-[9px] tracking-[0.2em] opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-3 transition-all duration-500 text-primary">
-              TRUY CẬP <ArrowRight size={14} strokeWidth={3} />
-            </div>
-          </div>
+          </Link>
         </div>
-      </Link>
+
+        <div className="mt-6 flex items-center justify-between relative z-10">
+          <div className="flex -space-x-2.5">
+            {group.members.slice(0, 4).map((m: any, i: number) => {
+              const isCurrentUser = m.email === userEmail;
+              const avatar = isCurrentUser ? userAvatar : m.avatarUrl;
+
+              return (
+                <div
+                  key={i}
+                  className="relative w-10 h-10 rounded-xl bg-muted border-[3px] border-card flex items-center justify-center text-[11px] font-black uppercase shadow-sm group-hover:border-primary/10 transition-all overflow-hidden"
+                  title={m.username}
+                >
+                  {avatar ? (
+                    <Image
+                      src={avatar}
+                      alt={m.username}
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  ) : (
+                    <span>{m.username.charAt(0)}</span>
+                  )}
+                </div>
+              );
+            })}
+
+            {group.members.length > 4 && (
+              <div className="w-10 h-10 z-10 rounded-xl bg-primary text-primary-foreground border-[3px] border-card flex items-center justify-center text-[10px] font-black shadow-sm">
+                +{group.members.length - 4}
+              </div>
+            )}
+          </div>
+
+          <Link href={`/groups/${group.id}`} className="flex items-center gap-1.5 font-black uppercase text-[9px] tracking-[0.2em] opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-3 transition-all duration-500 text-primary">
+            TRUY CẬP <ArrowRight size={14} strokeWidth={3} />
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
